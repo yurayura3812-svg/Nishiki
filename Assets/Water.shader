@@ -57,15 +57,24 @@ Shader "NISHIKI/Water_Final_Bump"
             float _RippleTime;
 
             Varyings vert (Attributes IN) {
-                Varyings OUT;
-                OUT.positionWS = TransformObjectToWorld(IN.positionOS.xyz);
-                OUT.positionCS = TransformWorldToHClip(OUT.positionWS);
-                OUT.uv = IN.uv;
-                OUT.screenPos = ComputeScreenPos(OUT.positionCS);
-                OUT.normalWS = TransformObjectToWorldNormal(IN.normalOS);
-                OUT.viewDirWS = GetWorldSpaceViewDir(OUT.positionWS);
-                return OUT;
+            Varyings OUT;
+            float3 posWS = TransformObjectToWorld(IN.positionOS.xyz);
+
+            // キューブの上面（ローカル座標のYが高い部分）だけをうねらせる
+            if (IN.positionOS.y > 0.0) {
+                float wave = sin(posWS.x * 2.0 + _Time.y * _WaveSpeed * 10.0) 
+                        * cos(posWS.z * 2.5 + _Time.y * _WaveSpeed * 8.0);
+                posWS.y += wave * _DistortionStrength * 5.0; 
             }
+
+            OUT.positionWS = posWS;
+            OUT.positionCS = TransformWorldToHClip(posWS);
+            OUT.uv = IN.uv;
+            OUT.screenPos = ComputeScreenPos(OUT.positionCS);
+            OUT.normalWS = TransformObjectToWorldNormal(IN.normalOS);
+            OUT.viewDirWS = GetWorldSpaceViewDir(posWS);
+            return OUT;
+        }
 
             half4 frag (Varyings IN) : SV_Target {
                 // 1. 波紋
@@ -118,6 +127,12 @@ Shader "NISHIKI/Water_Final_Bump"
                 float3 halfDir = normalize(viewDir + lightDir);
                 float spec = pow(max(0, dot(normal, halfDir)), 256.0 * _Glossiness) * _Glossiness;
                 finalRGB += spec * _MainLightColor.rgb * _ReflectionColor.rgb * _NormalStrength;
+                
+                // コースティクスの簡易実装
+                float2 causticUV = screenUV * 2.0 + _Time.y * _WaveSpeed;
+                half caustic = tex2D(_DistortionMap, causticUV).r; // ノーマルマップを再利用
+                caustic = pow(caustic, 10.0) * 2.0; // 鋭い網目にする
+                background += caustic * _ReflectionColor.rgb * 0.5; // 砂利を光らせる
                 return half4(finalRGB, 1.0);
             }
             ENDHLSL

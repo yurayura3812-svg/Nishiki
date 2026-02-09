@@ -34,12 +34,12 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _DistortionStrength: 0.02
+    - _DistortionStrength: 0
     - _Glossiness: 1
-    - _NormalStrength: 3
+    - _NormalStrength: 0.9
     - _RippleTime: 1
     - _TrailHeight: 1
-    - _WaveSpeed: 0.05
+    - _WaveSpeed: 0.01
     m_Colors:
     - _ReflectionColor: {r: 0.7924528, g: 0.7924528, b: 0.7924528, a: 1}
     - _RippleCenter: {r: 0, g: 0, b: 0, a: 0}

@@ -120,6 +120,8 @@ Shader "NISHIKI/Water_Real_Pond_Final_Fixed"
                 float depthDiff = saturate(sceneDepth - surfaceDepth);
                 float depthFactor = saturate(depthDiff * _DepthMultiplier);
 
+                depthFactor = max(0.2, depthFactor); // どんなに浅くても20%は染まった状態にする
+
                 // --- 屈折と二重防止エッジマスク ---
                 float edgeMask = smoothstep(0.02, 0.1, screenUV.x) * smoothstep(0.02, 0.1, 1.0 - screenUV.x) *
                                  smoothstep(0.02, 0.1, screenUV.y) * smoothstep(0.02, 0.1, 1.0 - screenUV.y);
@@ -129,12 +131,19 @@ Shader "NISHIKI/Water_Real_Pond_Final_Fixed"
 
                 // --- 色の合成 ---
                 half3 background = SampleSceneColor(distortedUV);
-                // 底を水の色で染める
-                float3 absorbed = background * lerp(float3(1,1,1), _AbsorptionTint.rgb, depthFactor);
-                // 水そのものの色を混ぜる
-                float3 waterColor = lerp(_ShallowColor.rgb, _DeepColor.rgb, depthFactor);
-                float3 waterBase = lerp(absorbed, waterColor, depthFactor * _WaterOpacity);
+                
+                // 【重要】色計算用の深さをここで作る（下駄を履かせる）
+                float colorDepth = saturate(depthFactor + 0.5); 
 
+                // 1. 背景（鯉）を染める計算にも colorDepth を使う！
+                // これで浅瀬でも「真っ白な背景」を拾わなくなります
+                float3 absorbed = background * lerp(float3(1,1,1), _AbsorptionTint.rgb, colorDepth);
+                
+                // 2. 水そのものの色
+                float3 waterColor = lerp(_ShallowColor.rgb, _DeepColor.rgb, colorDepth);
+                
+                // 3. 最終的な合成（ここも colorDepth を使う）
+                float3 waterBase = lerp(absorbed, waterColor, colorDepth * _WaterOpacity);
                 // --- 反射 ---
                 float3 reflectDir = reflect(-viewDir, normal);
                 half3 reflection = GlossyEnvironmentReflection(reflectDir, 1.0 - _Glossiness, 1.0);

@@ -123,7 +123,8 @@ Shader "NISHIKI/Water_Real_Pond_Final_Fixed"
                 // --- 屈折と二重防止エッジマスク ---
                 float edgeMask = smoothstep(0.02, 0.1, screenUV.x) * smoothstep(0.02, 0.1, 1.0 - screenUV.x) *
                                  smoothstep(0.02, 0.1, screenUV.y) * smoothstep(0.02, 0.1, 1.0 - screenUV.y);
-                float refractionAmount = depthFactor * _RefractionStrength * edgeMask;
+                float boundaryMask = smoothstep(0.01, 0.05, depthDiff); // 0.05の幅で徐々に歪ませる
+                float refractionAmount = depthFactor * _RefractionStrength * edgeMask * boundaryMask;
                 float2 distortedUV = screenUV + blendedNormal.xz * refractionAmount;
 
                 // --- 色の合成 ---

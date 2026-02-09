@@ -1,113 +1,162 @@
-Shader "NISHIKI/Water_Simple_Pure"
+Shader "NISHIKI/Water_Real_Pond_NaturalFlow_Fixed"
 {
     Properties
     {
-        [Header(Appearance)]
-        _WaterColor ("Water Color", Color) = (0.2, 0.4, 0.5, 0.6)
-        _ReflectionColor ("Reflection Color", Color) = (1, 1, 1, 1)
-        _Glossiness ("Glossiness", Range(0, 1)) = 0.9
-        
-        [Header(Distortion and Bump)]
-        _DistortionMap ("Normal Map", 2D) = "bump" {}
-        _DistortionStrength ("Distortion Strength", Range(0, 0.1)) = 0.02
-        _NormalStrength ("Normal Strength", Range(0, 10)) = 1.0
-        _WaveSpeed ("Wave Speed", Float) = 0.05
+        [Header(Color)]
+        _ShallowColor ("Shallow Color", Color) = (0.35,0.6,0.55,1)
+        _DeepColor ("Deep Color", Color) = (0.02,0.12,0.15,1)
+
+        [Header(Reflection)]
+        _ReflectionColor ("Reflection Color", Color) = (1,1,1,1)
+        _Glossiness ("Glossiness", Range(0,1)) = 0.65
+        _FresnelPower ("Fresnel Power", Range(1,8)) = 4
+
+        [Header(Wave)]
+        _WaveHeight ("Wave Height", Range(0,0.3)) = 0.06
+        _WaveSpeed ("Wave Speed", Float) = 0.6
+        _FlowDirection ("Flow Direction", Vector) = (0.6,0.0,0.3,0)
+
+        [Header(Normal)]
+        _NormalMap ("Normal Map", 2D) = "bump" {}
+        _NormalStrength ("Normal Strength", Range(0,3)) = 1.2
+
+        [Header(Refraction)]
+        _RefractionStrength ("Refraction Strength", Range(0,0.1)) = 0.03
+
+        [Header(Depth)]
+        _DepthMultiplier ("Depth Multiplier", Range(0.1,5)) = 1.8
     }
 
     SubShader
     {
-        Tags { "RenderType"="Transparent" "Queue"="Transparent" "RenderPipeline" = "UniversalPipeline"}
-        
+        Tags { "RenderType"="Transparent" "Queue"="Transparent" "RenderPipeline"="UniversalPipeline"}
+
         Pass
         {
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
+            
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareOpaqueTexture.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareOpaqueTexture.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
 
-            struct Attributes {
+            struct Attributes
+            {
                 float4 positionOS : POSITION;
                 float2 uv : TEXCOORD0;
                 float3 normalOS : NORMAL;
             };
 
-            struct Varyings {
+            struct Varyings
+            {
                 float4 positionCS : SV_POSITION;
-                float2 uv : TEXCOORD0;
-                float4 screenPos : TEXCOORD1;
-                float3 positionWS : TEXCOORD3;
-                float3 normalWS : TEXCOORD4;
-                float3 viewDirWS : TEXCOORD5;
+                float3 positionWS : TEXCOORD0;
+                float3 normalWS : TEXCOORD1;
+                float2 uv : TEXCOORD2;
+                float4 screenPos : TEXCOORD3;
+                float3 viewDirWS : TEXCOORD4;
             };
 
-            sampler2D _DistortionMap;
-            float4 _WaterColor;
+            sampler2D _NormalMap;
+            float4 _ShallowColor;
+            float4 _DeepColor;
             float4 _ReflectionColor;
-            float _DistortionStrength;
-            float _NormalStrength;
-            float _WaveSpeed;
             float _Glossiness;
+            float _FresnelPower;
+            float _WaveHeight;
+            float _WaveSpeed;
+            float4 _FlowDirection;
+            float _NormalStrength;
+            float _RefractionStrength;
+            float _DepthMultiplier;
 
-            Varyings vert (Attributes IN) {
+            Varyings vert (Attributes IN)
+            {
                 Varyings OUT;
-                float3 posWS = TransformObjectToWorld(IN.positionOS.xyz);
 
-                // --- 1. 数学的なうねり ---
-                // サイン波とコサイン波を組み合わせて複雑な揺れを再現
-                float wave = sin(posWS.x * 2.0 + _Time.y * _WaveSpeed * 10.0) 
-                           * cos(posWS.z * 2.5 + _Time.y * _WaveSpeed * 8.0);
-                posWS.y += wave * _DistortionStrength * 5.0; 
+                float3 originalWS = TransformObjectToWorld(IN.positionOS.xyz);
+                float3 posWS = originalWS;
+
+                float t1 = _Time.y * _WaveSpeed;
+                float t2 = _Time.y * (_WaveSpeed * 0.73);
+                float t3 = _Time.y * (_WaveSpeed * 1.21);
+
+                float wave1 = sin(dot(originalWS.xz, float2(1.3,0.7)) + t1);
+                float wave2 = sin(dot(originalWS.xz, float2(0.8,1.9)) - t2);
+                float wave3 = sin(dot(originalWS.xz, float2(2.2,1.1)) + t3);
+
+                float wave = (wave1 * 0.5 + wave2 * 0.3 + wave3 * 0.2);
+
+                posWS.y = originalWS.y + wave * _WaveHeight;
 
                 OUT.positionWS = posWS;
                 OUT.positionCS = TransformWorldToHClip(posWS);
+                OUT.normalWS = TransformObjectToWorldNormal(IN.normalOS);
                 OUT.uv = IN.uv;
                 OUT.screenPos = ComputeScreenPos(OUT.positionCS);
-                OUT.normalWS = TransformObjectToWorldNormal(IN.normalOS);
                 OUT.viewDirWS = GetWorldSpaceViewDir(posWS);
+
                 return OUT;
             }
 
-            half4 frag (Varyings IN) : SV_Target {
-                // --- 1. 法線の揺らぎ ---
-                float2 speed1 = float2(_WaveSpeed, _WaveSpeed * 0.8);
-                float2 speed2 = float2(-_WaveSpeed * 0.7, _WaveSpeed * 1.2);
-                float2 uv1 = IN.uv * 1.0 + _Time.y * speed1;
-                float2 uv2 = IN.uv * 1.5 + _Time.y * speed2;
-
-                float2 distortion1 = tex2D(_DistortionMap, uv1).rg * 2.0 - 1.0;
-                float2 distortion2 = tex2D(_DistortionMap, uv2).rg * 2.0 - 1.0;
-                float2 finalDistortion = (distortion1 + distortion2) * _DistortionStrength;
-
+            half4 frag (Varyings IN) : SV_Target
+            {
                 float3 viewDir = normalize(IN.viewDirWS);
-                float3 bump = float3(finalDistortion.x, 0, finalDistortion.y) * _NormalStrength;
-                float3 normal = normalize(IN.normalWS + bump);
-                
-                // --- 2. 屈折（背景の透け） ---
-                float2 screenUV = IN.screenPos.xy / IN.screenPos.w + (finalDistortion * 0.5);
-                half3 background = SampleSceneColor(screenUV);
+                float2 flowDir = normalize(_FlowDirection.xz);
 
-                // --- 3. 環境反射とフレネル ---
+                float t1 = _Time.y * (_WaveSpeed * 0.8);
+                float t2 = _Time.y * (_WaveSpeed * 1.35);
+
+                float2 uv1 = IN.uv + flowDir * t1 * 0.2;
+                float2 uv2 = IN.uv * 1.7 - flowDir * t2 * 0.15;
+
+                float3 n1 = UnpackNormal(tex2D(_NormalMap, uv1));
+                float3 n2 = UnpackNormal(tex2D(_NormalMap, uv2));
+
+                float3 blendedNormal = normalize(n1 + n2);
+                float3 normal = normalize(IN.normalWS + blendedNormal * _NormalStrength);
+
+                float2 screenUV = IN.screenPos.xy / IN.screenPos.w;
+
+                float rawDepth = SampleSceneDepth(screenUV);
+                float sceneDepth = LinearEyeDepth(rawDepth, _ZBufferParams);
+                float surfaceDepth = LinearEyeDepth(IN.positionCS.z, _ZBufferParams);
+
+                float depthDiff = saturate(sceneDepth - surfaceDepth);
+                float depthFactor = saturate(depthDiff * _DepthMultiplier);
+
+                float3 waterColor = lerp(_ShallowColor.rgb, _DeepColor.rgb, depthFactor);
+
+                float edgeMask = smoothstep(0.02, 0.1, screenUV.y) *
+                 smoothstep(0.02, 0.1, 1.0 - screenUV.y);
+
+                float refractionAmount = depthFactor * _RefractionStrength * edgeMask;
+
+                float2 distortedUV = screenUV + blendedNormal.xz * refractionAmount;
+
+                half3 background = SampleSceneColor(distortedUV);
+                float3 waterBase = lerp(background, waterColor, 0.65);
+
                 float3 reflectDir = reflect(-viewDir, normal);
-                half3 envReflection = GlossyEnvironmentReflection(reflectDir, 1.0 - _Glossiness, 1.0);
-                float fresnel = pow(1.0 - saturate(dot(normal, viewDir)), 5.0);
+                half3 reflection = GlossyEnvironmentReflection(reflectDir, 1.0 - _Glossiness, 1.0);
 
-                // --- 4. ライティングと合成 ---
-                half3 waterBase = lerp(background, _WaterColor.rgb, _WaterColor.a);
-                float3 lightDir = _MainLightPosition.xyz;
-                float ndotl = saturate(dot(normal, lightDir));
-                waterBase *= (0.7 + ndotl * 0.3); 
-                
-                half3 finalRGB = lerp(waterBase, envReflection * _ReflectionColor.rgb, fresnel * _Glossiness);
+                float fresnel = pow(1.0 - saturate(dot(normal, viewDir)), _FresnelPower);
 
-                // スペキュラハイライト
+                float3 finalColor = lerp(waterBase, reflection * _ReflectionColor.rgb, fresnel);
+
+                Light mainLight = GetMainLight();
+                float3 lightDir = normalize(mainLight.direction);
                 float3 halfDir = normalize(viewDir + lightDir);
-                float spec = pow(max(0, dot(normal, halfDir)), 256.0 * _Glossiness) * _Glossiness;
-                finalRGB += spec * _MainLightColor.rgb * _ReflectionColor.rgb * _NormalStrength;
-                
-                return half4(finalRGB, 1.0);
+
+                float spec = pow(saturate(dot(normal, halfDir)), 96.0) * _Glossiness;
+                finalColor += spec * mainLight.color * 0.5;
+
+                return half4(finalColor, 1.0);
+
             }
+
             ENDHLSL
         }
     }

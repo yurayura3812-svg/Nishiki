@@ -28,6 +28,10 @@ Material:
         m_Texture: {fileID: 2800000, guid: 21de6cc76647e8445a76d80bb28fa068, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _NormalMap:
         m_Texture: {fileID: 2800000, guid: 21de6cc76647e8445a76d80bb28fa068, type: 3}
         m_Scale: {x: 1, y: 1}
@@ -38,19 +42,21 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _DepthMultiplier: 5
+    - _DepthMultiplier: 4
     - _DistortionStrength: 0
     - _FresnelPower: 5
     - _Glossiness: 1
     - _NormalStrength: 0.9
-    - _RefractionStrength: 0.005
+    - _RefractionStrength: 0.001
     - _RippleTime: 1
     - _TrailHeight: 1
     - _WaterOpacity: 0.3
+    - _WaterSurfaceY: 0
     - _WaveHeight: 0.08
     - _WaveSpeed: 0.2
     m_Colors:
     - _AbsorptionTint: {r: 0.64146495, g: 0.7972437, b: 0.8773585, a: 0.99607843}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _DeepColor: {r: 0.08503909, g: 0.16929033, b: 0.19811311, a: 1}
     - _FlowDirection: {r: 0.6, g: 0, b: 0.3, a: 0}
     - _ReflectionColor: {r: 0.754717, g: 0.7226771, b: 0.7226771, a: 1}

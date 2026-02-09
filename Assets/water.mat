@@ -43,26 +43,43 @@ Material:
     m_Ints: []
     m_Floats:
     - _DepthMultiplier: 4
+    - _Distortion: 0.206
     - _DistortionStrength: 0
-    - _FresnelPower: 5
+    - _EdgeCut: 0.84
+    - _FresnelPower: 20
+    - _GlossIntensity: 1
     - _Glossiness: 1
-    - _NormalStrength: 0.9
+    - _NormalStrength: 0.1
+    - _Opacity: 0.2
+    - _ReflectionStrength: 0.2
     - _RefractionStrength: 0.001
     - _RippleTime: 1
+    - _SparkleDensity: 100
+    - _SparkleIntensity: 150
+    - _SparklePower: 13
+    - _SparkleScale: 170
+    - _SparkleScatter: 50
+    - _SparkleSize: 0.8
+    - _SparkleSmallness: 0.99999
+    - _SparkleSpeed: 1
+    - _SparkleThreshold: 0.999
+    - _SpecularIntensity: 0
     - _TrailHeight: 1
-    - _WaterOpacity: 0.3
+    - _WaterOpacity: 0.672
     - _WaterSurfaceY: 0
-    - _WaveHeight: 0.08
-    - _WaveSpeed: 0.2
+    - _WaveHeight: 0.3
+    - _WaveSpeed: 0.02
     m_Colors:
-    - _AbsorptionTint: {r: 0.64146495, g: 0.7972437, b: 0.8773585, a: 0.99607843}
+    - _AbsorptionTint: {r: 0.5018245, g: 0.5745149, b: 0.5943396, a: 1}
+    - _BaseColor: {r: 0.062299743, g: 0.5283019, b: 0.5283019, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _DeepColor: {r: 0.08503909, g: 0.16929033, b: 0.19811311, a: 1}
+    - _DeepColor: {r: 0.09380562, g: 0.6415094, b: 0.6415094, a: 1}
     - _FlowDirection: {r: 0.6, g: 0, b: 0.3, a: 0}
-    - _ReflectionColor: {r: 0.754717, g: 0.7226771, b: 0.7226771, a: 1}
+    - _ReflectionColor: {r: 1, g: 1, b: 1, a: 1}
     - _RippleCenter: {r: 0, g: 0, b: 0, a: 0}
-    - _ShallowColor: {r: 0.2999998, g: 0.6, b: 0.6, a: 0.19215687}
-    - _WaterColor: {r: 0, g: 0.8113207, b: 0.8113207, a: 0.023529412}
+    - _ShallowColor: {r: 0.18654326, g: 0.3018868, b: 0.3007098, a: 1}
+    - _SparkleColor: {r: 1, g: 1, b: 1, a: 1}
+    - _WaterColor: {r: 0.08098966, g: 0.49056602, b: 0.49056602, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &3567525791068227063

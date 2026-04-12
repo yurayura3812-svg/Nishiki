@@ -48,9 +48,12 @@ Material:
     - _EdgeCut: 0.84
     - _FresnelPower: 20
     - _GlossIntensity: 1
+    - _GlossSmoothness: 0.5
     - _Glossiness: 1
     - _NormalStrength: 0.1
     - _Opacity: 0.2
+    - _ReflectIntensity: 1
+    - _ReflectTightness: 120
     - _ReflectionStrength: 0.2
     - _RefractionStrength: 0.001
     - _RippleTime: 1
@@ -68,13 +71,14 @@ Material:
     - _WaterOpacity: 0.672
     - _WaterSurfaceY: 0
     - _WaveHeight: 0.3
-    - _WaveSpeed: 0.02
+    - _WaveSpeed: 0.5
     m_Colors:
     - _AbsorptionTint: {r: 0.5018245, g: 0.5745149, b: 0.5943396, a: 1}
     - _BaseColor: {r: 0.062299743, g: 0.5283019, b: 0.5283019, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _DeepColor: {r: 0.09380562, g: 0.6415094, b: 0.6415094, a: 1}
     - _FlowDirection: {r: 0.6, g: 0, b: 0.3, a: 0}
+    - _ReflectColor: {r: 0.9, g: 0.95, b: 1, a: 1}
     - _ReflectionColor: {r: 1, g: 1, b: 1, a: 1}
     - _RippleCenter: {r: 0, g: 0, b: 0, a: 0}
     - _ShallowColor: {r: 0.18654326, g: 0.3018868, b: 0.3007098, a: 1}

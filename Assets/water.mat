@@ -29,8 +29,8 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
+        m_Texture: {fileID: 2800000, guid: 21de6cc76647e8445a76d80bb28fa068, type: 3}
+        m_Scale: {x: 20, y: 20}
         m_Offset: {x: 0, y: 0}
     - _NormalMap:
         m_Texture: {fileID: 2800000, guid: 21de6cc76647e8445a76d80bb28fa068, type: 3}
@@ -54,6 +54,7 @@ Material:
     - _ReflectionStrength: 0.2
     - _RefractionStrength: 0.001
     - _RippleTime: 1
+    - _Smoothness: 0.8
     - _SparkleDensity: 100
     - _SparkleIntensity: 150
     - _SparklePower: 13
@@ -64,14 +65,24 @@ Material:
     - _SparkleSpeed: 1
     - _SparkleThreshold: 0.999
     - _SpecularIntensity: 0
+    - _SpeedX: 0.1
+    - _SpeedY: 0.1
     - _TrailHeight: 1
+    - _UVScrollSpeed: 0.03
     - _WaterOpacity: 0.672
     - _WaterSurfaceY: 0
+    - _WaveAmp: 0.02
+    - _WaveFreq: 1
     - _WaveHeight: 0.3
+<<<<<<< HEAD
     - _WaveSpeed: 0.02
+=======
+    - _WaveScale: 0.2
+    - _WaveSpeed: 0.5
+>>>>>>> 5769b59 (水のシェーダー仮作成)
     m_Colors:
     - _AbsorptionTint: {r: 0.5018245, g: 0.5745149, b: 0.5943396, a: 1}
-    - _BaseColor: {r: 0.062299743, g: 0.5283019, b: 0.5283019, a: 1}
+    - _BaseColor: {r: 0.14684944, g: 0.5660378, b: 0.5660378, a: 0.39607844}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _DeepColor: {r: 0.09380562, g: 0.6415094, b: 0.6415094, a: 1}
     - _FlowDirection: {r: 0.6, g: 0, b: 0.3, a: 0}
@@ -79,6 +90,7 @@ Material:
     - _RippleCenter: {r: 0, g: 0, b: 0, a: 0}
     - _ShallowColor: {r: 0.18654326, g: 0.3018868, b: 0.3007098, a: 1}
     - _SparkleColor: {r: 1, g: 1, b: 1, a: 1}
+    - _SpecularColor: {r: 1, g: 1, b: 1, a: 1}
     - _WaterColor: {r: 0.08098966, g: 0.49056602, b: 0.49056602, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

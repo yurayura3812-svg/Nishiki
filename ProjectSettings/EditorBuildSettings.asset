@@ -8,6 +8,18 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/SampleScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
+<<<<<<< HEAD
+=======
+  - enabled: 1
+    path: Assets/Scenes/KoiScene.unity
+    guid: 8fbe8fbcbb5bd98498db10bffe9f5691
+  - enabled: 1
+    path: Assets/Scenes/HinpyokaiScene.unity
+    guid: 70f2a5c84a19f434690a7108c1c843f6
+  - enabled: 1
+    path: Assets/Scenes/ShopScene.unity
+    guid: 9111f117759659b40bb5b540e5d78bec
+>>>>>>> 5769b59 (水のシェーダー仮作成)
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0

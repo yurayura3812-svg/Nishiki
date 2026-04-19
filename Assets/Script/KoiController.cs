@@ -2,9 +2,8 @@ using UnityEngine;
 
 public class KoiController : MonoBehaviour
 {
-    public KoiPatternData patternData; // ここにデータをセットする
+    public KoiPatternData patternData;
 
-    // 起動時とインスペクター変更時に反映
     void Start() { ApplyDNA(); }
     void OnValidate() { ApplyDNA(); }
 
@@ -12,25 +11,33 @@ public class KoiController : MonoBehaviour
     {
         if (patternData == null) return;
 
-        // 子要素にあるMeshRenderer（鯉の本体）を探す
-        Renderer renderer = GetComponentInChildren<Renderer>();
-        if (renderer == null) return;
+        // 【修正ポイント】単数形ではなく複数形で「全てのパーツ」を取得する
+        Renderer[] allRenderers = GetComponentsInChildren<Renderer>();
+        
+        if (allRenderers.Length == 0) return;
 
-        // 他の個体に影響を与えず、かつメモリに優しい反映方法
-        MaterialPropertyBlock mpb = new MaterialPropertyBlock();
-        renderer.GetPropertyBlock(mpb);
+        // 全てのパーツに対して一括でデータを流し込む
+        foreach (Renderer r in allRenderers)
+        {
+            MaterialPropertyBlock mpb = new MaterialPropertyBlock();
+            r.GetPropertyBlock(mpb);
 
-        mpb.SetColor("_RedColor", patternData.redColor);
-        mpb.SetFloat("_RedScale", patternData.redScale);
-        mpb.SetFloat("_RedAmount", patternData.redAmount);
+            // 地肌・赤・黒の色を反映
+            mpb.SetColor("_BaseColor", patternData.baseColor);
+            mpb.SetColor("_RedColor", patternData.redColor);
+            mpb.SetColor("_BlackColor", patternData.blackColor);
 
-        mpb.SetColor("_BlackColor", patternData.blackColor);
-        mpb.SetFloat("_BlackScale", patternData.blackScale);
-        mpb.SetFloat("_BlackAmount", patternData.blackAmount);
+            // 各種パラメータを反映
+            mpb.SetFloat("_RedScale", patternData.redScale);
+            mpb.SetFloat("_RedAmount", patternData.redAmount);
+            mpb.SetFloat("_BlackScale", patternData.blackScale);
+            mpb.SetFloat("_BlackAmount", patternData.blackAmount);
 
-        mpb.SetVector("_Seed", patternData.patternSeed);
-        mpb.SetFloat("_BellyLimit", patternData.bellyLimit);
+            // 模様のシード値とお腹の境界
+            mpb.SetVector("_Seed", (Vector4)patternData.patternSeed);
+            mpb.SetFloat("_BellyLimit", patternData.bellyLimit);
 
-        renderer.SetPropertyBlock(mpb);
+            r.SetPropertyBlock(mpb);
+        }
     }
 }

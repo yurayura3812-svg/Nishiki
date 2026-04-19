@@ -39,12 +39,12 @@ public class KoiNaturalTurn : MonoBehaviour
         individualThreshold = Random.Range(0.5f, 0.65f); // 画面端のガードをさらに内側に
         lastY = 1.0f;
 
-        float spawnRange = 0.3f; 
-        transform.position = new Vector3(
-            Random.Range(-spawnRange, spawnRange), 
-            1.0f, 
-            Random.Range(-spawnRange, spawnRange)
-        );
+        // float spawnRange = 0.3f; 
+        // transform.position = new Vector3(
+        //     Random.Range(-spawnRange, spawnRange), 
+        //     1.0f, 
+        //     Random.Range(-spawnRange, spawnRange)
+        // );
 
         float angle = Random.Range(0f, 360f);
         currentVelocityDirection = new Vector3(Mathf.Sin(angle), 0, Mathf.Cos(angle));

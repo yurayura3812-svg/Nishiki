@@ -42,7 +42,7 @@ Material:
     - _PatternBellyLimit: 0
     - _PatternSoftness: 0.061
     - _RedAmount: 0.38
-    - _RedDetail: 0.804
+    - _RedDetail: 1
     - _RedScale: 5
     - _Smoothness: 0.5
     m_Colors:

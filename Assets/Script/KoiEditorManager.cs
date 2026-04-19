@@ -36,7 +36,6 @@ public class KoiEditorManager : MonoBehaviour
     void Start()
     {
         // 1. スライダー項目の登録
-        // 地肌の色のR,G,Bを追加
         AddSetting("地肌 色(R)", "_BaseColorR", 0, 1);
         AddSetting("地肌 色(G)", "_BaseColorG", 0, 1);
         AddSetting("地肌 色(B)", "_BaseColorB", 0, 1);
@@ -62,7 +61,7 @@ public class KoiEditorManager : MonoBehaviour
         AddSetting("お腹境界", "_BellyLimit", -0.5f, 0.0f);
         AddSetting("ボケ具合", "_PatternSoftness", 0.01f, 0.5f);
 
-        // 2. 「真っ白」回避用の初期値を辞書にセット
+        // 2. 初期値を辞書にセット
         InitializeDefaultValues();
 
         // 3. UIの生成
@@ -71,8 +70,6 @@ public class KoiEditorManager : MonoBehaviour
 
     void InitializeDefaultValues()
     {
-        // 錦鯉らしいデフォルト値をあらかじめセット
-        // 初期値を白（1.0）にセット
         currentValues["_BaseColorR"] = 1.0f;
         currentValues["_BaseColorG"] = 1.0f;
         currentValues["_BaseColorB"] = 1.0f;
@@ -98,18 +95,24 @@ public class KoiEditorManager : MonoBehaviour
         currentValues["_BellyLimit"] = -0.2f; 
         currentValues["_PatternSoftness"] = 0.05f;
 
-        // もし baseData がアサインされていれば、そちらで上書きする
         if (baseData != null)
         {
+            currentValues["_BaseColorR"] = baseData.baseColor.r;
+            currentValues["_BaseColorG"] = baseData.baseColor.g;
+            currentValues["_BaseColorB"] = baseData.baseColor.b;
             currentValues["_RedColorR"] = baseData.redColor.r;
             currentValues["_RedColorG"] = baseData.redColor.g;
             currentValues["_RedColorB"] = baseData.redColor.b;
             currentValues["_RedAmount"] = baseData.redAmount;
             currentValues["_RedScale"] = baseData.redScale;
+            currentValues["_BlackColorR"] = baseData.blackColor.r;
+            currentValues["_BlackColorG"] = baseData.blackColor.g;
+            currentValues["_BlackColorB"] = baseData.blackColor.b;
             currentValues["_BlackAmount"] = baseData.blackAmount;
             currentValues["_BlackScale"] = baseData.blackScale;
             currentValues["_SeedX"] = baseData.patternSeed.x;
             currentValues["_SeedY"] = baseData.patternSeed.y;
+            currentValues["_SeedZ"] = baseData.patternSeed.z;
             currentValues["_BellyLimit"] = baseData.bellyLimit;
         }
     }
@@ -124,10 +127,7 @@ public class KoiEditorManager : MonoBehaviour
         {
             GameObject go = Instantiate(sliderRowPrefab, contentRoot);
             var row = go.GetComponent<EditorSliderRow>();
-            
-            // 辞書にセットされた初期値を取得
             float initVal = currentValues.ContainsKey(s.propName) ? currentValues[s.propName] : 0.5f; 
-            
             row.Setup(s.label, s.propName, s.min, s.max, initVal, OnSliderChanged);
             rows.Add(row);
             currentValues[s.propName] = initVal;
@@ -145,7 +145,6 @@ public class KoiEditorManager : MonoBehaviour
     {
         if (targetKoi == null) return;
         
-        // 子要素すべて（体、ひれ等）のRendererを取得して反映
         Renderer[] renderers = targetKoi.GetComponentsInChildren<Renderer>();
         
         foreach (var r in renderers)
@@ -153,8 +152,6 @@ public class KoiEditorManager : MonoBehaviour
             MaterialPropertyBlock mpb = new MaterialPropertyBlock();
             r.GetPropertyBlock(mpb);
 
-            // 色の合成
-            // 地肌の色（_BaseColor）をセット
             Color baseCol = new Color(GetValue("_BaseColorR"), GetValue("_BaseColorG"), GetValue("_BaseColorB"), 1);
             mpb.SetColor("_BaseColor", baseCol);
 
@@ -164,7 +161,6 @@ public class KoiEditorManager : MonoBehaviour
             Color black = new Color(GetValue("_BlackColorR"), GetValue("_BlackColorG"), GetValue("_BlackColorB"), 1);
             mpb.SetColor("_BlackColor", black);
 
-            // 数値パラメータ
             mpb.SetFloat("_RedAmount", GetValue("_RedAmount"));
             mpb.SetFloat("_RedScale", GetValue("_RedScale"));
             mpb.SetFloat("_RedDetail", GetValue("_RedDetail"));
@@ -172,11 +168,9 @@ public class KoiEditorManager : MonoBehaviour
             mpb.SetFloat("_BlackScale", GetValue("_BlackScale"));
             mpb.SetFloat("_BlackDetail", GetValue("_BlackDetail"));
 
-            // Vector（Seed）
             Vector4 seed = new Vector4(GetValue("_SeedX"), GetValue("_SeedY"), GetValue("_SeedZ"), 0);
             mpb.SetVector("_Seed", seed);
 
-            // その他
             mpb.SetFloat("_BellyLimit", GetValue("_BellyLimit"));
             mpb.SetFloat("_PatternSoftness", GetValue("_PatternSoftness"));
 
@@ -188,12 +182,10 @@ public class KoiEditorManager : MonoBehaviour
         return currentValues.ContainsKey(key) ? currentValues[key] : 0;
     }
 
-        public void Randomize()
+    public void Randomize()
     {
-        // 1. 各スライダーをランダムな位置に動かす
         foreach (var row in rows)
         {
-            // 色以外のパラメータ（量や大きさ）をランダムに
             if (!row.propertyName.Contains("Color")) 
             {
                 float rand = Random.Range(row.slider.minValue, row.slider.maxValue);
@@ -202,10 +194,8 @@ public class KoiEditorManager : MonoBehaviour
             }
         }
 
-        // 2. 「色」をランダムに決める（錦鯉らしい色合いから選択）
         ApplyRandomKoiStyle();
 
-        // 3. シード値を大きく変えて模様の形をガラッと変える
         currentValues["_SeedX"] = Random.Range(0f, 100f);
         currentValues["_SeedY"] = Random.Range(0f, 100f);
         currentValues["_SeedZ"] = Random.Range(0f, 100f);
@@ -213,35 +203,22 @@ public class KoiEditorManager : MonoBehaviour
         UpdateKoi(); 
     }
 
-    // 錦鯉のパターンに合わせて色をセットするヘルパー
     void ApplyRandomKoiStyle()
     {
         float type = Random.value;
 
-        // --- 1. まずベースカラー（地肌）を決める ---
         if (type < 0.7f) 
-        {
-            // 70%：標準的な白い地肌（紅白・三色系）
             SetColorValues("_BaseColor", Color.white);
-        }
         else if (type < 0.9f)
-        {
-            // 20%：黄色・黄金系の地肌
             SetColorValues("_BaseColor", new Color(1f, 0.8f, 0.2f)); 
-        }
         else
-        {
-            // 10%：珍しい青みがかった、あるいは暗めの地肌
             SetColorValues("_BaseColor", new Color(0.7f, 0.8f, 1f));
-        }
 
-        // --- 2. メイン模様（赤系）の色を決める ---
         Color[] redPalette = { Color.red, new Color(1f, 0.3f, 0f), new Color(1f, 0.5f, 0f) };
         SetColorValues("_RedColor", redPalette[Random.Range(0, redPalette.Length)]);
         currentValues["_RedAmount"] = Random.Range(0.3f, 0.7f);
 
-        // --- 3. 黒模様（墨）を混ぜるかどうか ---
-        if (Random.value < 0.6f) // 60%で黒が出る
+        if (Random.value < 0.6f)
         {
             SetColorValues("_BlackColor", new Color(0.05f, 0.05f, 0.05f));
             currentValues["_BlackAmount"] = Random.Range(0.2f, 0.5f);
@@ -251,11 +228,9 @@ public class KoiEditorManager : MonoBehaviour
             currentValues["_BlackAmount"] = 0;
         }
 
-        // スライダーに数値を同期
         SyncSlidersWithValues();
     }
 
-    // 共通ヘルパー（"_BaseColor" なども受け取れるように）
     void SetColorValues(string propPrefix, Color c)
     {
         currentValues[propPrefix + "R"] = c.r;
@@ -268,35 +243,44 @@ public class KoiEditorManager : MonoBehaviour
         foreach (var row in rows)
         {
             if (currentValues.ContainsKey(row.propertyName))
-            {
                 row.SetValueQuietly(currentValues[row.propertyName]);
-            }
         }
     }
 
     public void SaveAsAsset()
     {
 #if UNITY_EDITOR
+        // 1. ScriptableObjectのインスタンス作成
         KoiPatternData newData = ScriptableObject.CreateInstance<KoiPatternData>();
         
-        newData.redColor = new Color(GetValue("_RedColorR"), GetValue("_RedColorG"), GetValue("_RedColorB"));
+        // 2. 現在のUI/Dictionaryの値を全てデータに詰め込む
+        newData.baseColor = new Color(GetValue("_BaseColorR"), GetValue("_BaseColorG"), GetValue("_BaseColorB"), 1f);
+        
+        newData.redColor = new Color(GetValue("_RedColorR"), GetValue("_RedColorG"), GetValue("_RedColorB"), 1f);
         newData.redAmount = GetValue("_RedAmount");
         newData.redScale = GetValue("_RedScale");
+        
+        newData.blackColor = new Color(GetValue("_BlackColorR"), GetValue("_BlackColorG"), GetValue("_BlackColorB"), 1f);
         newData.blackAmount = GetValue("_BlackAmount");
         newData.blackScale = GetValue("_BlackScale");
+
         newData.patternSeed = new Vector3(GetValue("_SeedX"), GetValue("_SeedY"), GetValue("_SeedZ"));
         newData.bellyLimit = GetValue("_BellyLimit");
 
+        // 3. 保存処理
         string name = fileNameInput.text;
         if (string.IsNullOrEmpty(name)) name = "KoiData_" + System.DateTime.Now.ToString("HHmmss");
 
-        string path = "Assets/KoiData/" + name + ".asset";
+        string folderPath = "Assets/KoiData";
+        if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
         
-        if (!Directory.Exists("Assets/KoiData")) Directory.CreateDirectory("Assets/KoiData");
+        string path = folderPath + "/" + name + ".asset";
 
-        AssetDatabase.CreateAsset(newData, path);
-        AssetDatabase.SaveAssets();
-        Debug.Log("Saved Asset to: " + path);
+        UnityEditor.AssetDatabase.CreateAsset(newData, path);
+        UnityEditor.AssetDatabase.SaveAssets();
+        UnityEditor.AssetDatabase.Refresh();
+
+        Debug.Log($"<color=green>保存完了:</color> {name}.asset を作成しました。池のシーンに反映されます。");
 #endif
     }
 }

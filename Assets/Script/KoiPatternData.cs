@@ -4,6 +4,9 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "NewKoiData", menuName = "Koi/PatternData")]
 public class KoiPatternData : ScriptableObject
 {
+    [Header("Base Settings")]
+    public Color baseColor = Color.white; // ★これを追加！
+
     [Header("Red Settings")]
     public Color redColor = new Color(0.8f, 0.1f, 0.1f);
     public float redScale = 1.5f;

@@ -19,7 +19,7 @@ Shader "Custom/URP_Koi_Pattern_Managed"
         _BlackAmount("Black Amount", Range(0, 1)) = 0.6
 
         [Header(Individual Difference)]
-        _Seed("Pattern Seed", Vector) = (0,0,0,0) // C#からここをいじる
+        _Seed("Pattern Seed", Vector) = (0,0,0,0)
 
         [Header(Pattern Control)]
         _BellyLimit("Belly White Limit", Float) = 0.0
@@ -41,8 +41,16 @@ Shader "Custom/URP_Koi_Pattern_Managed"
             #pragma fragment frag
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
-            struct Attributes { float4 positionOS : POSITION; float2 uv : TEXCOORD0; };
-            struct Varyings { float4 positionCS : SV_POSITION; float3 positionOS : TEXCOORD1; float2 uv : TEXCOORD0; };
+            struct Attributes { 
+                float4 positionOS : POSITION; 
+                float2 uv : TEXCOORD0; 
+            };
+
+            struct Varyings { 
+                float4 positionCS : SV_POSITION; 
+                float4 positionOS : TEXCOORD1; // 精度安定のためfloat4へ
+                float2 uv : TEXCOORD0; 
+            };
 
             TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
 
@@ -52,9 +60,10 @@ Shader "Custom/URP_Koi_Pattern_Managed"
                 float _Smoothness; float _RedScale; float _RedDetail; float _RedAmount;
                 float _BlackScale; float _BlackDetail; float _BlackAmount;
                 float _BellyLimit; float _PatternSoftness;
-                float4 _Seed; // 追加
+                float4 _Seed;
             CBUFFER_END
 
+            // --- Noise Functions ---
             float hash(float3 p) {
                 p = frac(p * 0.1031);
                 p += dot(p, p.yzx + 33.33);
@@ -76,54 +85,56 @@ Shader "Custom/URP_Koi_Pattern_Managed"
                 return saturate(n_large - (n_small * detail_amount * 0.5));
             }
 
+            // --- Vertex Shader ---
             Varyings vert(Attributes IN) {
                 Varyings OUT;
                 OUT.positionCS = TransformObjectToHClip(IN.positionOS.xyz);
-                OUT.positionOS = IN.positionOS.xyz;
+                OUT.positionOS = IN.positionOS; // 座標をフラグメントへ渡す
                 OUT.uv = TRANSFORM_TEX(IN.uv, _BaseMap);
                 return OUT;
             }
 
+            // --- Fragment Shader ---
             half4 frag(Varyings IN) : SV_Target {
-    // 1. テクスチャをサンプリング（鱗の凹凸や眼の絵）
-    float4 texColor = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, IN.uv);
-    
-    // 2. テクスチャから「明暗（gray）」を抽出
-    float gray = dot(texColor.rgb, float3(0.2126, 0.7152, 0.0722));
-    
-    // 影の深さを調整（眼などの暗い部分をクッキリさせる）
-    float detailMask = pow(gray, 1.3); 
+                // 1. テクスチャサンプリング
+                float4 texColor = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, IN.uv);
+                
+                // 【重要】元のテクスチャの色を無視し、輝度（影）だけを抽出
+                // これにより、テクスチャの端にある「赤み」などが混ざらなくなります
+                float gray = dot(texColor.rgb, float3(0.2126, 0.7152, 0.0722));
+                float detailMask = saturate(pow(gray, 1.3));
 
-    // 3. お腹マスク（指定した高さより下は模様を消す）
-    float bellyMask = saturate(smoothstep(_BellyLimit - 0.2, _BellyLimit + 0.2, IN.positionOS.y));
+                // 2. 座標を安定させて取得
+                float3 pos = IN.positionOS.xyz;
 
-    // 4. 赤模様の計算
-    float3 p_red = (IN.positionOS + _Seed.xyz) * _RedScale;
-    float rNoise = get_natural_noise(p_red, 1.0, _RedDetail);
-    float rMask = smoothstep(1.0 - _RedAmount, (1.0 - _RedAmount) + _PatternSoftness, rNoise) * bellyMask;
+                // 3. お腹マスク
+                float bellyMask = saturate(smoothstep(_BellyLimit - 0.2, _BellyLimit + 0.2, pos.y));
 
-    // 5. 黒模様の計算
-    float3 p_black = (IN.positionOS + _Seed.xyz + float3(10, 20, 30)) * _BlackScale;
-    float bNoise = get_natural_noise(p_black, 1.0, _BlackDetail);
-    float bMask = smoothstep(1.0 - _BlackAmount, (1.0 - _BlackAmount) + _PatternSoftness, bNoise) * bellyMask;
+                // 4. 赤模様の計算
+                float3 p_red = (pos + _Seed.xyz) * _RedScale;
+                float rNoise = get_natural_noise(p_red, 1.0, _RedDetail);
+                float rMask = smoothstep(1.0 - _RedAmount, (1.0 - _RedAmount) + _PatternSoftness, rNoise) * bellyMask;
 
-    // 6. ベース・赤・黒の「平坦な色」を混ぜる
-    float3 flatColor = _BaseColor.rgb;
-    flatColor = lerp(flatColor, _RedColor.rgb, rMask);
-    flatColor = lerp(flatColor, _BlackColor.rgb, bMask);
+                // 5. 黒模様の計算
+                float3 p_black = (pos + _Seed.xyz + float3(10.0, 20.0, 30.0)) * _BlackScale;
+                float bNoise = get_natural_noise(p_black, 1.0, _BlackDetail);
+                float bMask = smoothstep(1.0 - _BlackAmount, (1.0 - _BlackAmount) + _PatternSoftness, bNoise) * bellyMask;
 
-    // 7. 【合成】
-    // まず、平坦な色にテクスチャの影を乗算する（これで眼や溝がクッキリする）
-    float3 shadowResult = flatColor * detailMask;
-    
-    // 次に、テクスチャの明るい部分だけを「反射光（スペキュラ）」として加算する
-    // これにより、真っ黒な模様の上でも鱗のフチが光って質感が出る
-    float specular = pow(gray, 8.0) * 0.15; 
-    
-    float3 finalRGB = shadowResult + specular;
+                // 6. 色の合成
+                // 地肌の色（_BaseColor）からスタートし、模様を上書きしていく
+                float3 flatColor = _BaseColor.rgb;
+                flatColor = lerp(flatColor, _RedColor.rgb, rMask);
+                flatColor = lerp(flatColor, _BlackColor.rgb, bMask);
 
-    return half4(finalRGB, texColor.a);
-}
+                // 7. 最終出力
+                // 合成した色にテクスチャの影（鱗の溝など）を掛ける
+                float3 finalRGB = flatColor * detailMask;
+                
+                // ヌラヌラとした反射光（スペキュラ）を少し足す
+                finalRGB += pow(detailMask, 8.0) * 0.12; 
+
+                return half4(finalRGB, 1.0);
+            }
             ENDHLSL
         }
     }

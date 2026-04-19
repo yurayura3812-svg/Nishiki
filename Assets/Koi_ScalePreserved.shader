@@ -85,24 +85,45 @@ Shader "Custom/URP_Koi_Pattern_Managed"
             }
 
             half4 frag(Varyings IN) : SV_Target {
-                float4 texColor = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, IN.uv) * _BaseColor;
-                float3 originalRGB = texColor.rgb;
-                float3 finalRGB = originalRGB;
+    // 1. テクスチャをサンプリング（鱗の凹凸や眼の絵）
+    float4 texColor = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, IN.uv);
+    
+    // 2. テクスチャから「明暗（gray）」を抽出
+    float gray = dot(texColor.rgb, float3(0.2126, 0.7152, 0.0722));
+    
+    // 影の深さを調整（眼などの暗い部分をクッキリさせる）
+    float detailMask = pow(gray, 1.3); 
 
-                float bellyMask = saturate(smoothstep(_BellyLimit - 0.1, _BellyLimit + 0.1, IN.positionOS.y));
+    // 3. お腹マスク（指定した高さより下は模様を消す）
+    float bellyMask = saturate(smoothstep(_BellyLimit - 0.2, _BellyLimit + 0.2, IN.positionOS.y));
 
-                // 模様計算に _Seed を加算して個体差を出す
-                float3 p_red = (IN.positionOS + _Seed.xyz) * _RedScale;
-                float rMask = smoothstep(1.0 - _RedAmount, (1.0 - _RedAmount) + _PatternSoftness, get_natural_noise(p_red, 1.0, _RedDetail)) * bellyMask;
+    // 4. 赤模様の計算
+    float3 p_red = (IN.positionOS + _Seed.xyz) * _RedScale;
+    float rNoise = get_natural_noise(p_red, 1.0, _RedDetail);
+    float rMask = smoothstep(1.0 - _RedAmount, (1.0 - _RedAmount) + _PatternSoftness, rNoise) * bellyMask;
 
-                float3 p_black = (IN.positionOS + _Seed.xyz + float3(10, 20, 30)) * _BlackScale;
-                float bMask = smoothstep(1.0 - _BlackAmount, (1.0 - _BlackAmount) + _PatternSoftness, get_natural_noise(p_black, 1.0, _BlackDetail)) * bellyMask;
+    // 5. 黒模様の計算
+    float3 p_black = (IN.positionOS + _Seed.xyz + float3(10, 20, 30)) * _BlackScale;
+    float bNoise = get_natural_noise(p_black, 1.0, _BlackDetail);
+    float bMask = smoothstep(1.0 - _BlackAmount, (1.0 - _BlackAmount) + _PatternSoftness, bNoise) * bellyMask;
 
-                finalRGB = lerp(finalRGB, originalRGB * _RedColor.rgb * 2.0, rMask);
-                finalRGB = lerp(finalRGB, originalRGB * _BlackColor.rgb, bMask);
+    // 6. ベース・赤・黒の「平坦な色」を混ぜる
+    float3 flatColor = _BaseColor.rgb;
+    flatColor = lerp(flatColor, _RedColor.rgb, rMask);
+    flatColor = lerp(flatColor, _BlackColor.rgb, bMask);
 
-                return half4(finalRGB, texColor.a);
-            }
+    // 7. 【合成】
+    // まず、平坦な色にテクスチャの影を乗算する（これで眼や溝がクッキリする）
+    float3 shadowResult = flatColor * detailMask;
+    
+    // 次に、テクスチャの明るい部分だけを「反射光（スペキュラ）」として加算する
+    // これにより、真っ黒な模様の上でも鱗のフチが光って質感が出る
+    float specular = pow(gray, 8.0) * 0.15; 
+    
+    float3 finalRGB = shadowResult + specular;
+
+    return half4(finalRGB, texColor.a);
+}
             ENDHLSL
         }
     }

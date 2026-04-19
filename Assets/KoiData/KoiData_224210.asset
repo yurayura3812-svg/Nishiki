@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6a8ef5377ffe2a5418b79faa88e82685, type: 3}
-  m_Name: 2
+  m_Name: KoiData_224210
   m_EditorClassIdentifier: Assembly-CSharp::KoiPatternData
-  redColor: {r: 0.101960756, g: 0.14585158, b: 0.8, a: 1}
-  redScale: 1.5
-  redAmount: 0.5
-  blackColor: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
-  blackScale: 2
-  blackAmount: 0.6
-  patternSeed: {x: 0, y: 0, z: 0}
-  bellyLimit: 0
+  redColor: {r: 0, g: 1, b: 0.1, a: 1}
+  redScale: 5.2648015
+  redAmount: 0.7284314
+  blackColor: {r: 0.1, g: 0.1, b: 0.1, a: 1}
+  blackScale: 7.4703803
+  blackAmount: 0.6696856
+  patternSeed: {x: 5.574951, y: 0, z: 85.27591}
+  bellyLimit: 0.08362341

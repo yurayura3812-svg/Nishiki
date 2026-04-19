@@ -3,23 +3,22 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 using System.IO;
 
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
-
 public class KoiEditorManager : MonoBehaviour
 {
+    public enum KoiMode { Single, Dual, Triple }
+    private KoiMode currentMode = KoiMode.Triple;
+
     [Header("Target")]
-    public KoiController targetKoi; // 編集対象の鯉（シーン内のオブジェクトをアサイン）
+    public KoiController targetKoi; 
     
     [Header("UI Elements")]
-    public RectTransform contentRoot;      // ScrollViewのContent (VerticalLayoutGroup付き)
-    public GameObject sliderRowPrefab;     // EditorSliderRowのプレハブ
-    public InputField fileNameInput;       // 保存名入力用InputField
+    public RectTransform contentRoot;
+    public GameObject sliderRowPrefab;
+    public InputField fileNameInput;
     
-    [Header("Data")]
-    public KoiPatternData baseData;        // 編集の元にするデータ（あればアサイン）
-    
+    [Header("Data Template")]
+    public KoiPatternData baseData; 
+
     [System.Serializable]
     public struct SliderSetting {
         public string label;
@@ -27,260 +26,270 @@ public class KoiEditorManager : MonoBehaviour
         public float min;
         public float max;
     }
+    public Toggle seedToggle;
+
+    [Header("UI Colors")]
+    public Color activeColor = Color.cyan;   // 選択中の色
+    public Color inactiveColor = Color.white; // 非選択の色
+
+    [Header("Mode Buttons")]
+    public Image btnSingleImage; // ボタンのImageコンポーネントをアサイン
+    public Image btnDualImage;
+    public Image btnTripleImage;
 
     public List<SliderSetting> settings = new List<SliderSetting>();
-    
     private Dictionary<string, float> currentValues = new Dictionary<string, float>();
     private List<EditorSliderRow> rows = new List<EditorSliderRow>();
 
+    // グループ管理用（表示・非表示を切り替えるため）
+    private List<EditorSliderRow> sub1Group = new List<EditorSliderRow>();
+    private List<EditorSliderRow> sub2Group = new List<EditorSliderRow>();
+
+    // --- 追加：シードのスライダーをまとめて管理するリスト ---
+    private List<EditorSliderRow> seedRows = new List<EditorSliderRow>();
     void Start()
     {
-        // 1. スライダー項目の登録
-        AddSetting("地肌 色(R)", "_BaseColorR", 0, 1);
-        AddSetting("地肌 色(G)", "_BaseColorG", 0, 1);
-        AddSetting("地肌 色(B)", "_BaseColorB", 0, 1);
+        // 1. 設定項目の登録（名称を Main / Sub1 / Sub2 に統一）
+        AddSetting("メイン 色(R)", "_MainColorR", 0, 1);
+        AddSetting("メイン 色(G)", "_MainColorG", 0, 1);
+        AddSetting("メイン 色(B)", "_MainColorB", 0, 1);
 
-        AddSetting("赤 色(R)", "_RedColorR", 0, 1);
-        AddSetting("赤 色(G)", "_RedColorG", 0, 1);
-        AddSetting("赤 色(B)", "_RedColorB", 0, 1);
-        AddSetting("赤 量", "_RedAmount", 0, 1);
-        AddSetting("赤 大きさ", "_RedScale", 0.5f, 10.0f);
-        AddSetting("赤 詳細", "_RedDetail", 0, 1);
+        AddSetting("サブ1 色(R)", "_SubColor1R", 0, 1);
+        AddSetting("サブ1 色(G)", "_SubColor1G", 0, 1);
+        AddSetting("サブ1 色(B)", "_SubColor1B", 0, 1);
+        AddSetting("サブ1 量", "_Sub1Amount", 0, 1);
+        AddSetting("サブ1 大きさ", "_Sub1Scale", 0.5f, 10.0f);
+        AddSetting("サブ1 詳細", "_Sub1Detail", 0, 1);
 
-        AddSetting("黒 色(R)", "_BlackColorR", 0, 1);
-        AddSetting("黒 色(G)", "_BlackColorG", 0, 1);
-        AddSetting("黒 色(B)", "_BlackColorB", 0, 1);
-        AddSetting("黒 量", "_BlackAmount", 0, 1);
-        AddSetting("黒 大きさ", "_BlackScale", 0.5f, 10.0f);
-        AddSetting("黒 詳細", "_BlackDetail", 0, 1);
+        AddSetting("サブ2 色(R)", "_SubColor2R", 0, 1);
+        AddSetting("サブ2 色(G)", "_SubColor2G", 0, 1);
+        AddSetting("サブ2 色(B)", "_SubColor2B", 0, 1);
+        AddSetting("サブ2 量", "_Sub2Amount", 0, 1);
+        AddSetting("サブ2 大きさ", "_Sub2Scale", 0.5f, 10.0f);
+        AddSetting("サブ2 詳細", "_Sub2Detail", 0, 1);
 
-        AddSetting("シード X", "_SeedX", 0, 100);
-        AddSetting("シード Y", "_SeedY", 0, 100);
-        AddSetting("シード Z", "_SeedZ", 0, 100);
+        AddSetting("模様シード X", "_SeedX", 0, 100);
+        AddSetting("模様シード Y", "_SeedY", 0, 100);
+        AddSetting("模様シード Z", "_SeedZ", 0, 100);
 
-        AddSetting("お腹境界", "_BellyLimit", -0.5f, 0.0f);
-        AddSetting("ボケ具合", "_PatternSoftness", 0.01f, 0.5f);
-
-        // 2. 初期値を辞書にセット
         InitializeDefaultValues();
-
-        // 3. UIの生成
         GenerateUI();
+
+        // 最初は「単色」モードで起動
+        SetModeSingle();
     }
 
-    void InitializeDefaultValues()
+    // --- ボタンから呼ぶモード切替用メソッド ---
+    public void SetModeSingle() => ChangeMode(KoiMode.Single);
+    public void SetModeDual() => ChangeMode(KoiMode.Dual);
+    public void SetModeTriple() => ChangeMode(KoiMode.Triple);
+
+    private void ChangeMode(KoiMode mode)
     {
-        currentValues["_BaseColorR"] = 1.0f;
-        currentValues["_BaseColorG"] = 1.0f;
-        currentValues["_BaseColorB"] = 1.0f;
+        currentMode = mode;
 
-        currentValues["_RedColorR"] = 1.0f;
-        currentValues["_RedColorG"] = 0.0f;
-        currentValues["_RedColorB"] = 0.0f;
-        currentValues["_RedAmount"] = 0.6f;
-        currentValues["_RedScale"] = 2.5f;
-        currentValues["_RedDetail"] = 0.5f;
+        // ボタンの見た目を更新
+        if (btnSingleImage) btnSingleImage.color = (mode == KoiMode.Single) ? activeColor : inactiveColor;
+        if (btnDualImage)   btnDualImage.color   = (mode == KoiMode.Dual)   ? activeColor : inactiveColor;
+        if (btnTripleImage) btnTripleImage.color = (mode == KoiMode.Triple) ? activeColor : inactiveColor;
 
-        currentValues["_BlackColorR"] = 0.1f;
-        currentValues["_BlackColorG"] = 0.1f;
-        currentValues["_BlackColorB"] = 0.1f;
-        currentValues["_BlackAmount"] = 0.3f;
-        currentValues["_BlackScale"] = 3.5f;
-        currentValues["_BlackDetail"] = 0.5f;
+        // UIのスライダー表示・非表示
+        foreach (var r in sub1Group) r.gameObject.SetActive(mode != KoiMode.Single);
+        foreach (var r in sub2Group) r.gameObject.SetActive(mode == KoiMode.Triple);
 
+        // モード切替の命令が終わったあとで、「トグルがONならシード値を出す」と念押しする
+        if (seedToggle != null)
+        {
+            foreach (var r in seedRows)
+            {
+                r.gameObject.SetActive(seedToggle.isOn);
+            }
+        }
+        UpdateKoi();
+    }
+
+    // --- 模様ガチャ（色は変えずシードだけランダム） ---
+    public void RandomizeSeedOnly()
+    {
         currentValues["_SeedX"] = Random.Range(0f, 100f);
         currentValues["_SeedY"] = Random.Range(0f, 100f);
         currentValues["_SeedZ"] = Random.Range(0f, 100f);
 
-        currentValues["_BellyLimit"] = -0.2f; 
-        currentValues["_PatternSoftness"] = 0.05f;
-
-        if (baseData != null)
+        foreach (var row in rows)
         {
-            currentValues["_BaseColorR"] = baseData.baseColor.r;
-            currentValues["_BaseColorG"] = baseData.baseColor.g;
-            currentValues["_BaseColorB"] = baseData.baseColor.b;
-            currentValues["_RedColorR"] = baseData.redColor.r;
-            currentValues["_RedColorG"] = baseData.redColor.g;
-            currentValues["_RedColorB"] = baseData.redColor.b;
-            currentValues["_RedAmount"] = baseData.redAmount;
-            currentValues["_RedScale"] = baseData.redScale;
-            currentValues["_BlackColorR"] = baseData.blackColor.r;
-            currentValues["_BlackColorG"] = baseData.blackColor.g;
-            currentValues["_BlackColorB"] = baseData.blackColor.b;
-            currentValues["_BlackAmount"] = baseData.blackAmount;
-            currentValues["_BlackScale"] = baseData.blackScale;
-            currentValues["_SeedX"] = baseData.patternSeed.x;
-            currentValues["_SeedY"] = baseData.patternSeed.y;
-            currentValues["_SeedZ"] = baseData.patternSeed.z;
-            currentValues["_BellyLimit"] = baseData.bellyLimit;
+            if (row.propertyName.Contains("Seed"))
+            {
+                row.SetValueQuietly(currentValues[row.propertyName]);
+            }
         }
+        UpdateKoi();
     }
 
-    void AddSetting(string l, string p, float min, float max) {
-        settings.Add(new SliderSetting { label = l, propName = p, min = min, max = max });
+    void InitializeDefaultValues()
+    {
+        currentValues["_MainColorR"] = 1.0f;
+        currentValues["_MainColorG"] = 1.0f;
+        currentValues["_MainColorB"] = 1.0f;
+
+        currentValues["_SubColor1R"] = 0.8f;
+        currentValues["_SubColor1G"] = 0.1f;
+        currentValues["_SubColor1B"] = 0.1f;
+        currentValues["_Sub1Amount"] = 0.5f;
+        currentValues["_Sub1Scale"] = 2.0f;
+
+        currentValues["_SubColor2R"] = 0.1f;
+        currentValues["_SubColor2G"] = 0.1f;
+        currentValues["_SubColor2B"] = 0.1f;
+        currentValues["_Sub2Amount"] = 0.4f;
+        currentValues["_Sub2Scale"] = 3.0f;
+
+        currentValues["_SeedX"] = Random.Range(0f, 100f);
+        currentValues["_SeedY"] = Random.Range(0f, 100f);
+        currentValues["_SeedZ"] = Random.Range(0f, 100f);
     }
 
     void GenerateUI()
+{
+    foreach (var s in settings)
     {
-        foreach (var s in settings)
+        GameObject go = Instantiate(sliderRowPrefab, contentRoot);
+        var row = go.GetComponent<EditorSliderRow>();
+        float initVal = currentValues.ContainsKey(s.propName) ? currentValues[s.propName] : 0.5f; 
+        row.Setup(s.label, s.propName, s.min, s.max, initVal, (p, v) => { currentValues[p] = v; UpdateKoi(); });
+        rows.Add(row);
+
+        // --- 1. シード値かどうかを真っ先に判定する ---
+        if (s.propName.Contains("Seed"))
         {
-            GameObject go = Instantiate(sliderRowPrefab, contentRoot);
-            var row = go.GetComponent<EditorSliderRow>();
-            float initVal = currentValues.ContainsKey(s.propName) ? currentValues[s.propName] : 0.5f; 
-            row.Setup(s.label, s.propName, s.min, s.max, initVal, OnSliderChanged);
-            rows.Add(row);
-            currentValues[s.propName] = initVal;
+            seedRows.Add(row);
+            // ★重要：シード値だったら、ここでこの回の処理を「おしまい」にする。
+            // これで、下の sub1Group とかには絶対に入らなくなります。
+            continue; 
         }
-        UpdateKoi();
+
+        // --- 2. シード値じゃないものだけが、ここから下のグループ分けに進める ---
+        if (s.propName.Contains("SubColor1") || s.propName.Contains("Sub1")) sub1Group.Add(row);
+        if (s.propName.Contains("SubColor2") || s.propName.Contains("Sub2")) sub2Group.Add(row);
     }
 
-    void OnSliderChanged(string prop, float val)
+    // 2. モードを適用
+    ChangeMode(currentMode); // TripleでもcurrentModeでもOK
+
+    // 3. 最後にトグルの状態を念押し！
+    if (seedToggle != null) 
     {
-        currentValues[prop] = val;
-        UpdateKoi();
+        ToggleSeedVisible(seedToggle.isOn);
+    }
+}
+
+    // --- 追加：チェックボックスから呼ばれる命令 ---
+    public void ToggleSeedVisible(bool isOn)
+    {
+        foreach (var row in seedRows)
+        {
+            row.gameObject.SetActive(isOn); // チェックに応じて表示/非表示
+        }
     }
 
     void UpdateKoi()
     {
         if (targetKoi == null) return;
-        
         Renderer[] renderers = targetKoi.GetComponentsInChildren<Renderer>();
-        
+
+        // 現在のモードに合わせて送る値を調整
+        float s1Amount = (currentMode == KoiMode.Single) ? 0 : GetValue("_Sub1Amount");
+        float s2Amount = (currentMode == KoiMode.Triple) ? GetValue("_Sub2Amount") : 0;
+
         foreach (var r in renderers)
         {
             MaterialPropertyBlock mpb = new MaterialPropertyBlock();
             r.GetPropertyBlock(mpb);
 
-            Color baseCol = new Color(GetValue("_BaseColorR"), GetValue("_BaseColorG"), GetValue("_BaseColorB"), 1);
-            mpb.SetColor("_BaseColor", baseCol);
+            // プロパティ名がシェーダーの Properties ブロックと完全に一致しているか確認
+            mpb.SetColor("_MainColor", new Color(GetValue("_MainColorR"), GetValue("_MainColorG"), GetValue("_MainColorB"), 1));
+            mpb.SetColor("_SubColor1", new Color(GetValue("_SubColor1R"), GetValue("_SubColor1G"), GetValue("_SubColor1B"), 1));
+            mpb.SetColor("_SubColor2", new Color(GetValue("_SubColor2R"), GetValue("_SubColor2G"), GetValue("_SubColor2B"), 1));
+            mpb.SetFloat("_Sub1Detail", GetValue("_Sub1Detail"));
+            mpb.SetFloat("_Sub2Detail", GetValue("_Sub2Detail"));
 
-            Color red = new Color(GetValue("_RedColorR"), GetValue("_RedColorG"), GetValue("_RedColorB"), 1);
-            mpb.SetColor("_RedColor", red);
+            mpb.SetFloat("_Sub1Amount", s1Amount);
+            mpb.SetFloat("_Sub1Scale", GetValue("_Sub1Scale"));
+            mpb.SetFloat("_Sub2Amount", s2Amount);
+            mpb.SetFloat("_Sub2Scale", GetValue("_Sub2Scale"));
 
-            Color black = new Color(GetValue("_BlackColorR"), GetValue("_BlackColorG"), GetValue("_BlackColorB"), 1);
-            mpb.SetColor("_BlackColor", black);
-
-            mpb.SetFloat("_RedAmount", GetValue("_RedAmount"));
-            mpb.SetFloat("_RedScale", GetValue("_RedScale"));
-            mpb.SetFloat("_RedDetail", GetValue("_RedDetail"));
-            mpb.SetFloat("_BlackAmount", GetValue("_BlackAmount"));
-            mpb.SetFloat("_BlackScale", GetValue("_BlackScale"));
-            mpb.SetFloat("_BlackDetail", GetValue("_BlackDetail"));
-
-            Vector4 seed = new Vector4(GetValue("_SeedX"), GetValue("_SeedY"), GetValue("_SeedZ"), 0);
-            mpb.SetVector("_Seed", seed);
-
-            mpb.SetFloat("_BellyLimit", GetValue("_BellyLimit"));
-            mpb.SetFloat("_PatternSoftness", GetValue("_PatternSoftness"));
-
+            // Vector4の第4引数(w)は0でOK
+            mpb.SetVector("_Seed", new Vector4(GetValue("_SeedX"), GetValue("_SeedY"), GetValue("_SeedZ"), 0));
+            
             r.SetPropertyBlock(mpb);
         }
     }
-
-    float GetValue(string key) {
-        return currentValues.ContainsKey(key) ? currentValues[key] : 0;
-    }
-
-    public void Randomize()
+    // 全てのパラメータ（色・量・シード）をランダムにする
+    public void RandomizeAll()
     {
         foreach (var row in rows)
         {
-            if (!row.propertyName.Contains("Color")) 
-            {
-                float rand = Random.Range(row.slider.minValue, row.slider.maxValue);
-                row.SetValueQuietly(rand);
-                currentValues[row.propertyName] = rand;
-            }
+            // 各スライダーの最小値〜最大値でランダムな値を決める
+            float rand = Random.Range(row.slider.minValue, row.slider.maxValue);
+            
+            // 内部データに保存
+            currentValues[row.propertyName] = rand;
+            
+            // スライダーの見た目（つまみ）に反映
+            row.SetValueQuietly(rand);
         }
 
-        ApplyRandomKoiStyle();
-
-        currentValues["_SeedX"] = Random.Range(0f, 100f);
-        currentValues["_SeedY"] = Random.Range(0f, 100f);
-        currentValues["_SeedZ"] = Random.Range(0f, 100f);
-
-        UpdateKoi(); 
-    }
-
-    void ApplyRandomKoiStyle()
-    {
-        float type = Random.value;
-
-        if (type < 0.7f) 
-            SetColorValues("_BaseColor", Color.white);
-        else if (type < 0.9f)
-            SetColorValues("_BaseColor", new Color(1f, 0.8f, 0.2f)); 
-        else
-            SetColorValues("_BaseColor", new Color(0.7f, 0.8f, 1f));
-
-        Color[] redPalette = { Color.red, new Color(1f, 0.3f, 0f), new Color(1f, 0.5f, 0f) };
-        SetColorValues("_RedColor", redPalette[Random.Range(0, redPalette.Length)]);
-        currentValues["_RedAmount"] = Random.Range(0.3f, 0.7f);
-
-        if (Random.value < 0.6f)
-        {
-            SetColorValues("_BlackColor", new Color(0.05f, 0.05f, 0.05f));
-            currentValues["_BlackAmount"] = Random.Range(0.2f, 0.5f);
-        }
-        else
-        {
-            currentValues["_BlackAmount"] = 0;
-        }
-
-        SyncSlidersWithValues();
-    }
-
-    void SetColorValues(string propPrefix, Color c)
-    {
-        currentValues[propPrefix + "R"] = c.r;
-        currentValues[propPrefix + "G"] = c.g;
-        currentValues[propPrefix + "B"] = c.b;
-    }
-
-    void SyncSlidersWithValues()
-    {
-        foreach (var row in rows)
-        {
-            if (currentValues.ContainsKey(row.propertyName))
-                row.SetValueQuietly(currentValues[row.propertyName]);
-        }
+        // 最後にマテリアルへ一括反映
+        UpdateKoi();
     }
 
     public void SaveAsAsset()
     {
 #if UNITY_EDITOR
-        // 1. ScriptableObjectのインスタンス作成
         KoiPatternData newData = ScriptableObject.CreateInstance<KoiPatternData>();
         
-        // 2. 現在のUI/Dictionaryの値を全てデータに詰め込む
-        newData.baseColor = new Color(GetValue("_BaseColorR"), GetValue("_BaseColorG"), GetValue("_BaseColorB"), 1f);
-        
-        newData.redColor = new Color(GetValue("_RedColorR"), GetValue("_RedColorG"), GetValue("_RedColorB"), 1f);
-        newData.redAmount = GetValue("_RedAmount");
-        newData.redScale = GetValue("_RedScale");
-        
-        newData.blackColor = new Color(GetValue("_BlackColorR"), GetValue("_BlackColorG"), GetValue("_BlackColorB"), 1f);
-        newData.blackAmount = GetValue("_BlackAmount");
-        newData.blackScale = GetValue("_BlackScale");
+        // メインカラーは常に保存
+        newData.mainColor = new Color(GetValue("_MainColorR"), GetValue("_MainColorG"), GetValue("_MainColorB"), 1);
 
+        // --- モード判定に基づいた書き出し ---
+        
+        // 単色（Single）ならサブ1・サブ2の量を0にして保存
+        // 2色（Dual）ならサブ1はそのまま、サブ2の量を0にして保存
+        // 3色（Triple）なら全てそのまま保存
+        
+        float s1Amount = (currentMode == KoiMode.Single) ? 0 : GetValue("_Sub1Amount");
+        float s2Amount = (currentMode == KoiMode.Triple) ? GetValue("_Sub2Amount") : 0;
+
+        // サブ1の設定
+        newData.sub1Color = new Color(GetValue("_SubColor1R"), GetValue("_SubColor1G"), GetValue("_SubColor1B"), 1);
+        newData.sub1Amount = s1Amount; 
+        newData.sub1Scale = GetValue("_Sub1Scale");
+
+        // サブ2の設定
+        newData.sub2Color = new Color(GetValue("_SubColor2R"), GetValue("_SubColor2G"), GetValue("_SubColor2B"), 1);
+        newData.sub2Amount = s2Amount;
+        newData.sub2Scale = GetValue("_Sub2Scale");
+
+        newData.sub1Detail = GetValue("_Sub1Detail"); // Dataスクリプトに変数がない場合は追加
+        newData.sub2Detail = GetValue("_Sub2Detail");
+
+        // その他共通設定
         newData.patternSeed = new Vector3(GetValue("_SeedX"), GetValue("_SeedY"), GetValue("_SeedZ"));
-        newData.bellyLimit = GetValue("_BellyLimit");
+        newData.bellyLimit = 0; // 必要に応じてここもスライダー値を取得
 
-        // 3. 保存処理
+        // 保存処理
         string name = fileNameInput.text;
         if (string.IsNullOrEmpty(name)) name = "KoiData_" + System.DateTime.Now.ToString("HHmmss");
-
-        string folderPath = "Assets/KoiData";
-        if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
+        string path = "Assets/KoiData/" + name + ".asset";
+        if (!Directory.Exists("Assets/KoiData")) Directory.CreateDirectory("Assets/KoiData");
         
-        string path = folderPath + "/" + name + ".asset";
-
         UnityEditor.AssetDatabase.CreateAsset(newData, path);
         UnityEditor.AssetDatabase.SaveAssets();
         UnityEditor.AssetDatabase.Refresh();
-
-        Debug.Log($"<color=green>保存完了:</color> {name}.asset を作成しました。池のシーンに反映されます。");
+        
+        Debug.Log($"<color=green>保存完了:</color> {currentMode}モードで {name}.asset を作成しました。");
 #endif
     }
+
+    void AddSetting(string l, string p, float min, float max) => settings.Add(new SliderSetting { label = l, propName = p, min = min, max = max });
+    float GetValue(string key) => currentValues.ContainsKey(key) ? currentValues[key] : 0;
 }

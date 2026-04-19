@@ -1737,10 +1737,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2e81646d5ad809841a4b3babebaa3b6f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::KoiSpawner
-  koiPrefab: {fileID: 0}
+  koiPrefab: {fileID: 7884130344912931215, guid: 9582ffa146601d34ea84146f508adf56, type: 3}
   dataList:
   - {fileID: 11400000, guid: 3c8edc72820bad24a9ea71ac6297687d, type: 2}
-  - {fileID: 11400000, guid: e43649baad388864a86d71c347bb9a6f, type: 2}
+  - {fileID: 11400000, guid: 4bb74048d65bba546b7dd52aa085de1a, type: 2}
+  - {fileID: 11400000, guid: f854c800db8380b499e9028a6817f996, type: 2}
+  - {fileID: 11400000, guid: 6d0c72daa7d457b4cabced980b09d52e, type: 2}
+  - {fileID: 11400000, guid: 999c07021c23b2445b2273a1617eb44a, type: 2}
+  - {fileID: 11400000, guid: 4a3f1c262d6105c478234eddfd1c43c2, type: 2}
 --- !u!4 &1247453031
 Transform:
   m_ObjectHideFlags: 0
@@ -3090,67 +3094,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2086688031}
   m_CullTransparentMesh: 1
---- !u!1001 &8875972468397101768
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 7359407814052778805, guid: 9582ffa146601d34ea84146f508adf56, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7359407814052778805, guid: 9582ffa146601d34ea84146f508adf56, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7359407814052778805, guid: 9582ffa146601d34ea84146f508adf56, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7359407814052778805, guid: 9582ffa146601d34ea84146f508adf56, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7359407814052778805, guid: 9582ffa146601d34ea84146f508adf56, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7359407814052778805, guid: 9582ffa146601d34ea84146f508adf56, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7359407814052778805, guid: 9582ffa146601d34ea84146f508adf56, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7359407814052778805, guid: 9582ffa146601d34ea84146f508adf56, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7359407814052778805, guid: 9582ffa146601d34ea84146f508adf56, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7359407814052778805, guid: 9582ffa146601d34ea84146f508adf56, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7884130344912931215, guid: 9582ffa146601d34ea84146f508adf56, type: 3}
-      propertyPath: m_Name
-      value: nishiki
-      objectReference: {fileID: 0}
-    - target: {fileID: 7884130344912931215, guid: 9582ffa146601d34ea84146f508adf56, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 9582ffa146601d34ea84146f508adf56, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -3160,7 +3103,6 @@ SceneRoots:
   - {fileID: 1809819961}
   - {fileID: 1636199191}
   - {fileID: 728023977}
-  - {fileID: 8875972468397101768}
   - {fileID: 1422020989}
   - {fileID: 1376913816}
   - {fileID: 1247453031}

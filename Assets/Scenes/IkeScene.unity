@@ -1738,13 +1738,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::KoiSpawner
   koiPrefab: {fileID: 7884130344912931215, guid: 9582ffa146601d34ea84146f508adf56, type: 3}
-  dataList:
-  - {fileID: 11400000, guid: 3c8edc72820bad24a9ea71ac6297687d, type: 2}
-  - {fileID: 11400000, guid: 4bb74048d65bba546b7dd52aa085de1a, type: 2}
-  - {fileID: 11400000, guid: f854c800db8380b499e9028a6817f996, type: 2}
-  - {fileID: 11400000, guid: 6d0c72daa7d457b4cabced980b09d52e, type: 2}
-  - {fileID: 11400000, guid: 999c07021c23b2445b2273a1617eb44a, type: 2}
-  - {fileID: 11400000, guid: 4a3f1c262d6105c478234eddfd1c43c2, type: 2}
+  dataList: []
 --- !u!4 &1247453031
 Transform:
   m_ObjectHideFlags: 0

@@ -11,29 +11,24 @@ public class KoiController : MonoBehaviour
     {
         if (patternData == null) return;
 
-        // 【修正ポイント】単数形ではなく複数形で「全てのパーツ」を取得する
         Renderer[] allRenderers = GetComponentsInChildren<Renderer>();
-        
         if (allRenderers.Length == 0) return;
 
-        // 全てのパーツに対して一括でデータを流し込む
         foreach (Renderer r in allRenderers)
         {
             MaterialPropertyBlock mpb = new MaterialPropertyBlock();
             r.GetPropertyBlock(mpb);
 
-            // 地肌・赤・黒の色を反映
-            mpb.SetColor("_BaseColor", patternData.baseColor);
-            mpb.SetColor("_RedColor", patternData.redColor);
-            mpb.SetColor("_BlackColor", patternData.blackColor);
+            // リネーム後のプロパティ名に合わせる
+            mpb.SetColor("_MainColor", patternData.mainColor);
+            mpb.SetColor("_SubColor1", patternData.sub1Color);
+            mpb.SetColor("_SubColor2", patternData.sub2Color);
 
-            // 各種パラメータを反映
-            mpb.SetFloat("_RedScale", patternData.redScale);
-            mpb.SetFloat("_RedAmount", patternData.redAmount);
-            mpb.SetFloat("_BlackScale", patternData.blackScale);
-            mpb.SetFloat("_BlackAmount", patternData.blackAmount);
+            mpb.SetFloat("_Sub1Scale", patternData.sub1Scale);
+            mpb.SetFloat("_Sub1Amount", patternData.sub1Amount);
+            mpb.SetFloat("_Sub2Scale", patternData.sub2Scale);
+            mpb.SetFloat("_Sub2Amount", patternData.sub2Amount);
 
-            // 模様のシード値とお腹の境界
             mpb.SetVector("_Seed", (Vector4)patternData.patternSeed);
             mpb.SetFloat("_BellyLimit", patternData.bellyLimit);
 

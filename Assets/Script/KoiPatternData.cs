@@ -21,4 +21,5 @@ public class KoiPatternData : ScriptableObject
     [Header("Individual Settings")]
     public Vector3 patternSeed; 
     [Range(-0.5f, 0.5f)] public float bellyLimit = 0.0f; 
+    public Texture2D photoTexture;
 }

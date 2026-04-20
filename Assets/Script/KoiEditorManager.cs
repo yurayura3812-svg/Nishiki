@@ -335,23 +335,56 @@ public class KoiEditorManager : MonoBehaviour
     public void SaveAsAsset()
     {
 #if UNITY_EDITOR
+        // 1. データの作成
         KoiPatternData newData = ScriptableObject.CreateInstance<KoiPatternData>();
+        
+        // 色やパラメータの代入
         newData.mainColor = new Color(GetValue("_MainColorR"), GetValue("_MainColorG"), GetValue("_MainColorB"), 1);
         float s1Amount = (currentMode == KoiMode.Single) ? 0 : GetValue("_Sub1Amount");
         float s2Amount = (currentMode == KoiMode.Triple) ? GetValue("_Sub2Amount") : 0;
         newData.sub1Color = new Color(GetValue("_SubColor1R"), GetValue("_SubColor1G"), GetValue("_SubColor1B"), 1);
-        newData.sub1Amount = s1Amount; newData.sub1Scale = GetValue("_Sub1Scale");
+        newData.sub1Amount = s1Amount; 
+        newData.sub1Scale = GetValue("_Sub1Scale");
         newData.sub2Color = new Color(GetValue("_SubColor2R"), GetValue("_SubColor2G"), GetValue("_SubColor2B"), 1);
-        newData.sub2Amount = s2Amount; newData.sub2Scale = GetValue("_Sub2Scale");
-        newData.sub1Detail = GetValue("_Sub1Detail"); newData.sub2Detail = GetValue("_Sub2Detail");
+        newData.sub2Amount = s2Amount; 
+        newData.sub2Scale = GetValue("_Sub2Scale");
+        newData.sub1Detail = GetValue("_Sub1Detail"); 
+        newData.sub2Detail = GetValue("_Sub2Detail");
         newData.patternSeed = new Vector3(GetValue("_SeedX"), GetValue("_SeedY"), GetValue("_SeedZ"));
-        string name = fileNameInput.text;
-        if (string.IsNullOrEmpty(name)) name = "KoiData_" + System.DateTime.Now.ToString("HHmmss");
-        string path = "Assets/KoiData/" + name + ".asset";
-        if (!Directory.Exists("Assets/KoiData")) Directory.CreateDirectory("Assets/KoiData");
+
+        // 2. 重複しないファイル名の決定
+        string baseName = fileNameInput.text;
+        if (string.IsNullOrEmpty(baseName)) baseName = "NewKoi";
+
+        string folderPath = "Assets/KoiData";
+        if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
+
+        string finalName = baseName;
+        int counter = 1;
+        while (File.Exists($"{folderPath}/{finalName}.asset"))
+        {
+            finalName = $"{baseName} {counter}";
+            counter++;
+        }
+
+        newData.name = finalName; // 内部名も更新
+        string path = $"{folderPath}/{finalName}.asset";
+
+        // 3. アセットとして一旦保存
         UnityEditor.AssetDatabase.CreateAsset(newData, path);
         UnityEditor.AssetDatabase.SaveAssets();
+
+        // 4. ★自動撮影の依頼（スタジオがあれば）
+        // エディター画面からでも、スタジオに「今作ったこれ撮って！」と頼みます
+        if (KoiPhotoStudio.Instance != null)
+        {
+            // エディター画面にはUIのRawImageがない場合が多いので、
+            // 第2引数は null でも動くようにスタジオ側が対応していればOKです
+            KoiPhotoStudio.Instance.RequestCapture(newData, null);
+        }
+
         UnityEditor.AssetDatabase.Refresh();
+        Debug.Log($"<color=green>【Editor】</color> {finalName} を写真付きで保存しました！");
 #endif
     }
 

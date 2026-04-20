@@ -269,18 +269,40 @@ public class BreedingUIManager : MonoBehaviour
     {
         if (childData == null) return;
 
-        string koiName = nameInput.text;
-        if (string.IsNullOrEmpty(koiName)) koiName = "名無しの錦鯉";
+        // 1. 入力された基本名を取得
+        string baseName = nameInput.text;
+        if (string.IsNullOrEmpty(baseName)) baseName = "名無しの錦鯉";
 
 #if UNITY_EDITOR
-        string timeStamp = System.DateTime.Now.ToString("MMdd_HHmmss");
-        string path = $"Assets/KoiData/{koiName}_{timeStamp}.asset";
+        string folderPath = "Assets/KoiData";
+        
+        // フォルダがない場合は作成
+        if (!Directory.Exists(folderPath))
+        {
+            Directory.CreateDirectory(folderPath);
+        }
 
+        // 2. ★重複チェックのロジック
+        string finalName = baseName;
+        int counter = 1;
+        
+        // すでに「名前.asset」が存在するかチェックし、あれば「名前 1.asset」にする
+        while (File.Exists($"{folderPath}/{finalName}.asset"))
+        {
+            finalName = $"{baseName} {counter}";
+            counter++;
+        }
+
+        // 3. データに確定した名前を書き込む
+        childData.name = finalName; // ScriptableObject内部の名前変数も更新
+
+        // 4. 保存実行
+        string path = $"{folderPath}/{finalName}.asset";
         AssetDatabase.CreateAsset(childData, path);
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
 
-        Debug.Log($"<color=cyan>新種誕生！</color> {koiName} を保存しました！");
+        Debug.Log($"<color=cyan>新種誕生！</color> {finalName} を保存しました！");
 #endif
         ResetUI();
     }

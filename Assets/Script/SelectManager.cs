@@ -1,78 +1,102 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class SelectManager : MonoBehaviour
 {
     [Header("--- 各パネルの参照 ---")]
-    public GameObject crossPanel;         // 交配画面
-    public GameObject selectPanel;        // 錦鯉選択リストパネル
-    public GameObject editorPanel;        // 詳細作成（スライダー）画面
+    public GameObject crossPanel;
+    public GameObject selectPanel;
+    public GameObject editorPanel;
+
+    [Header("--- メニューボタン本体 (押し分け用) ---")]
+    public Button btnCreate; // Buttonコンポーネントをアタッチ
+    public Button btnCross;  
+    public Button btnEdit;   
+
+    [Header("--- タブの色設定 ---")]
+    public Color activeTabColor = Color.cyan;
+    public Color inactiveTabColor = Color.white;
 
     [Header("--- 演出・モデル用 ---")]
-    public GameObject rotationArea;       // 3D回転用エリア
+    public GameObject rotationArea;
     public GameObject rotationResetButton;
-    public GameObject nishikiModel;       // 撮影用またはプレビュー用の鯉モデル
+    public GameObject nishikiModel;
 
     [Header("--- 他のマネージャーへの参照 ---")]
-    public BreedingUIManager breedingManager; // 交配の進行管理
-    public KoiEditorManager editorManager;     // 編集・作成の管理
+    public BreedingUIManager breedingManager;
+    public KoiEditorManager editorManager;
 
     void Start()
     {
-        // 起動時は「交配画面」をデフォルトにする（お好みで変えてください）
         OnClickCrossButton();
     }
 
     // ==========================================
-    // 1. 【交配】ボタン（中央のボタン）
+    // 共通処理：ボタンの状態（色と有効化）を更新
+    // ==========================================
+    private void UpdateButtonStates(Button activeButton)
+    {
+        // 全ボタンを一旦「白」にして「有効（押せる）」にする
+        ResetButton(btnCreate);
+        ResetButton(btnCross);
+        ResetButton(btnEdit);
+
+        // 選択されたボタンだけ「指定色」にして「無効（押せない）」にする
+        if (activeButton != null)
+        {
+            activeButton.interactable = false;
+            // ButtonのTargetGraphic（通常はImage）の色を変える
+            if (activeButton.targetGraphic != null)
+            {
+                activeButton.targetGraphic.color = activeTabColor;
+            }
+        }
+    }
+
+    private void ResetButton(Button btn)
+    {
+        if (btn == null) return;
+        btn.interactable = true;
+        if (btn.targetGraphic != null)
+        {
+            btn.targetGraphic.color = inactiveTabColor;
+        }
+    }
+
+    // ==========================================
+    // 各ボタンのクリックイベント
     // ==========================================
     public void OnClickCrossButton()
     {
         SetAllPanelsInactive();
+        UpdateButtonStates(btnCross); // 交配ボタンを無効化
 
         crossPanel.SetActive(true);
-        // 交配画面では3D回転などは不要ならOFF
         if (nishikiModel != null) nishikiModel.SetActive(false);
     }
 
-    // ==========================================
-    // 2. 【詳細作成】ボタン（左のボタン）
-    // ==========================================
     public void OnClickNewCreateButton()
     {
         SetAllPanelsInactive();
+        UpdateButtonStates(btnCreate); // 詳細作成ボタンを無効化
 
         editorPanel.SetActive(true);
         rotationArea.SetActive(true);
         rotationResetButton.SetActive(true);
         if (nishikiModel != null) nishikiModel.SetActive(true);
 
-        // ★重要：エディターを「新規作成モード」としてリセットする
-        if (editorManager != null)
-        {
-            editorManager.ResetToNew();
-        }
+        if (editorManager != null) editorManager.ResetToNew();
     }
 
-    // ==========================================
-    // 3. 【編集】ボタン（右のボタン）
-    // ==========================================
     public void OnClickEditModeButton()
     {
         SetAllPanelsInactive();
+        UpdateButtonStates(btnEdit); // 編集ボタンを無効化
 
-        // まず「どの鯉を直すか」を選ぶためにリストを開く
         selectPanel.SetActive(true);
-
-        // ★重要：リストを「編集モード(Target 0)」として開くように依頼する
-        if (breedingManager != null)
-        {
-            breedingManager.OpenForEditMode();
-        }
+        if (breedingManager != null) breedingManager.OpenForEditMode();
     }
 
-    // ==========================================
-    // 共通：パネルを一旦全部閉じる
-    // ==========================================
     private void SetAllPanelsInactive()
     {
         crossPanel.SetActive(false);
@@ -82,18 +106,12 @@ public class SelectManager : MonoBehaviour
         rotationResetButton.SetActive(false);
     }
 
-    // BreedingUIManagerから「編集対象が決まったからエディタを開いて！」
-    // と言われた時に呼び出すための関数です。
     public void OnClickEditorButton()
     {
-        // 全パネルを一旦閉じる
-        crossPanel.SetActive(false);
-        selectPanel.SetActive(false);
-        editorPanel.SetActive(false);
-        rotationArea.SetActive(false);
-        rotationResetButton.SetActive(false);
+        SetAllPanelsInactive();
+        // 編集対象を選んだ後も、カテゴリとしては「編集」なのでEditボタンを無効化
+        UpdateButtonStates(btnEdit); 
 
-        // エディタ（詳細作成）パネルを表示
         editorPanel.SetActive(true);
         rotationArea.SetActive(true);
         rotationResetButton.SetActive(true);

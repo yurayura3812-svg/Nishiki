@@ -55,6 +55,9 @@ public class BreedingUIManager : MonoBehaviour
     public RenderTexture rtParent2;
     public RenderTexture rtChild;
 
+    [Header("--- 外部マネージャーの参照 ---")]
+    public KoiEditorManager editorManager;
+
     // --- 内部状態の管理 ---
     private int currentSelectingTarget = 1; 
     private KoiPatternData tempSelectedData; 
@@ -157,15 +160,30 @@ public class BreedingUIManager : MonoBehaviour
     {
         if (tempSelectedData == null) return;
 
+        // ★追加：編集モード（ターゲットが0）の処理
+        if (currentSelectingTarget == 0)
+        {
+            // エディターマネージャーにデータをロードさせる
+            if (editorManager != null)
+            {
+                editorManager.LoadAssetForEdit(tempSelectedData);
+            }
+
+            // UIの切り替え（SelectManagerの関数を呼ぶのが一番確実です）
+            SelectManager sm = FindObjectOfType<SelectManager>();
+            if (sm != null) sm.OnClickEditorButton();
+
+            CloseSelectPanel();
+            return; // 編集モードならここで終了
+        }
+
+        // --- 以下、既存の交配用ロジック（親1・親2の選択） ---
         if (currentSelectingTarget == 1)
         {
             parent1Data = tempSelectedData;
-            
-            // UI文字の切り替え
             if (parent1Placeholder != null) parent1Placeholder.SetActive(false);
             if (parent1NameText != null) parent1NameText.text = parent1Data.name;
 
-            // モデルの起動と適用
             if (parent1KoiModel != null)
             {
                 parent1KoiModel.gameObject.SetActive(true);
@@ -173,22 +191,18 @@ public class BreedingUIManager : MonoBehaviour
                 parent1KoiModel.ApplyDNA(); 
             }
 
-            // テクスチャの反映
             if (parent1RawImage != null)
             {
                 parent1RawImage.texture = rtParent1;
                 parent1RawImage.color = Color.white;
             }
         }
-        else
+        else if (currentSelectingTarget == 2)
         {
             parent2Data = tempSelectedData;
-            
-            // UI文字の切り替え
             if (parent2Placeholder != null) parent2Placeholder.SetActive(false);
             if (parent2NameText != null) parent2NameText.text = parent2Data.name;
 
-            // モデルの起動と適用
             if (parent2KoiModel != null)
             {
                 parent2KoiModel.gameObject.SetActive(true);
@@ -196,7 +210,6 @@ public class BreedingUIManager : MonoBehaviour
                 parent2KoiModel.ApplyDNA();
             }
 
-            // テクスチャの反映
             if (parent2RawImage != null)
             {
                 parent2RawImage.texture = rtParent2;
@@ -263,6 +276,14 @@ public class BreedingUIManager : MonoBehaviour
         if (birthEffect != null) birthEffect.Play();
         
         saveButton.interactable = true;
+    }
+
+    // --- SelectManagerから呼ばれる「編集モード開始」の窓口を追加 ---
+    public void OpenForEditMode()
+    {
+        // ターゲット0番を「編集用」としてリストを開く
+        OpenSelectPanel(0);
+        if (selectMessage != null) selectMessage.text = "編集する錦鯉を選択してください。";
     }
 
     void SaveChildKoi()

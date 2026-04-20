@@ -332,59 +332,179 @@ public class KoiEditorManager : MonoBehaviour
         UpdateUIVisibility();
     }
 
+    // KoiEditorManager.cs に追加
+    public void LoadAssetForEdit(KoiPatternData data)
+    {
+        if (data == null) return;
+
+        currentEditingAsset = data;
+        baseData = data; // 今いじっているアセットを記憶
+        fileNameInput.text = data.name; // 名前をInputFieldに入れる
+
+        // --- 辞書(currentValues)の中身をアセットの数値で上書きする ---
+        currentValues["_MainColorR"] = data.mainColor.r;
+        currentValues["_MainColorG"] = data.mainColor.g;
+        currentValues["_MainColorB"] = data.mainColor.b;
+        
+        currentValues["_SubColor1R"] = data.sub1Color.r;
+        currentValues["_SubColor1G"] = data.sub1Color.g;
+        currentValues["_SubColor1B"] = data.sub1Color.b;
+        currentValues["_Sub1Amount"] = data.sub1Amount;
+        currentValues["_Sub1Scale"]  = data.sub1Scale;
+        currentValues["_Sub1Detail"] = data.sub1Detail;
+
+        currentValues["_SubColor2R"] = data.sub2Color.r;
+        currentValues["_SubColor2G"] = data.sub2Color.g;
+        currentValues["_SubColor2B"] = data.sub2Color.b;
+        currentValues["_Sub2Amount"] = data.sub2Amount;
+        currentValues["_Sub2Scale"]  = data.sub2Scale;
+        currentValues["_Sub2Detail"] = data.sub2Detail;
+
+        currentValues["_SeedX"] = data.patternSeed.x;
+        currentValues["_SeedY"] = data.patternSeed.y;
+        currentValues["_SeedZ"] = data.patternSeed.z;
+
+        // --- UI（スライダー）のつまみを、書き換えた数値の位置に動かす ---
+        foreach (var row in rows)
+        {
+            if (currentValues.ContainsKey(row.propertyName))
+            {
+                // UI側に反映（スライダーのイベントを飛ばさずに値をセット）
+                row.SetValueQuietly(currentValues[row.propertyName]);
+            }
+        }
+
+        // モードの自動判定（サブ2があれば3色、サブ1だけなら2色、なければ単色）
+        if (data.sub2Amount > 0.01f) SetModeTriple();
+        else if (data.sub1Amount > 0.01f) SetModeDual();
+        else SetModeSingle();
+
+        UpdateKoi(); // 3Dモデルに反映
+        UpdateUIVisibility(); // UIの表示/非表示を更新
+    }
+
+    // --- クラスの冒頭（変数宣言のところ）に追加 ---
+    private KoiPatternData currentEditingAsset = null; 
+
+    // --- クラスの中（関数が並んでいるところ）に追加 ---
+    public void ResetToNew()
+    {
+        // 1. 編集中のアセット情報をクリア（これで新規作成モードになる）
+        currentEditingAsset = null;
+
+        // 2. 入力欄を空にする
+        if (fileNameInput != null) fileNameInput.text = "";
+
+        // 3. パラメータを初期値に戻す（既存の関数を流用）
+        InitializeDefaultValues();
+
+        // 4. 見た目に反映
+        UpdateKoi();
+        UpdateUIVisibility();
+        
+        Debug.Log("<color=orange>【Editor】</color> 新規作成モードでリセットしました");
+    }
+
     public void SaveAsAsset()
     {
 #if UNITY_EDITOR
-        // 1. データの作成
-        KoiPatternData newData = ScriptableObject.CreateInstance<KoiPatternData>();
-        
-        // 色やパラメータの代入
-        newData.mainColor = new Color(GetValue("_MainColorR"), GetValue("_MainColorG"), GetValue("_MainColorB"), 1);
+        bool isOverwrite = (currentEditingAsset != null);
+        KoiPatternData dataToSave = isOverwrite ? currentEditingAsset : ScriptableObject.CreateInstance<KoiPatternData>();
+
+        // 1. パラメータを代入（中身の更新）
+        dataToSave.mainColor = new Color(GetValue("_MainColorR"), GetValue("_MainColorG"), GetValue("_MainColorB"), 1);
         float s1Amount = (currentMode == KoiMode.Single) ? 0 : GetValue("_Sub1Amount");
         float s2Amount = (currentMode == KoiMode.Triple) ? GetValue("_Sub2Amount") : 0;
-        newData.sub1Color = new Color(GetValue("_SubColor1R"), GetValue("_SubColor1G"), GetValue("_SubColor1B"), 1);
-        newData.sub1Amount = s1Amount; 
-        newData.sub1Scale = GetValue("_Sub1Scale");
-        newData.sub2Color = new Color(GetValue("_SubColor2R"), GetValue("_SubColor2G"), GetValue("_SubColor2B"), 1);
-        newData.sub2Amount = s2Amount; 
-        newData.sub2Scale = GetValue("_Sub2Scale");
-        newData.sub1Detail = GetValue("_Sub1Detail"); 
-        newData.sub2Detail = GetValue("_Sub2Detail");
-        newData.patternSeed = new Vector3(GetValue("_SeedX"), GetValue("_SeedY"), GetValue("_SeedZ"));
+        
+        dataToSave.sub1Color = new Color(GetValue("_SubColor1R"), GetValue("_SubColor1G"), GetValue("_SubColor1B"), 1);
+        dataToSave.sub1Amount = s1Amount; 
+        dataToSave.sub1Scale = GetValue("_Sub1Scale");
+        dataToSave.sub1Detail = GetValue("_Sub1Detail");
 
-        // 2. 重複しないファイル名の決定
-        string baseName = fileNameInput.text;
-        if (string.IsNullOrEmpty(baseName)) baseName = "NewKoi";
+        dataToSave.sub2Color = new Color(GetValue("_SubColor2R"), GetValue("_SubColor2G"), GetValue("_SubColor2B"), 1);
+        dataToSave.sub2Amount = s2Amount; 
+        dataToSave.sub2Scale = GetValue("_Sub2Scale");
+        dataToSave.sub2Detail = GetValue("_Sub2Detail");
 
-        string folderPath = "Assets/KoiData";
-        if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
+        dataToSave.patternSeed = new Vector3(GetValue("_SeedX"), GetValue("_SeedY"), GetValue("_SeedZ"));
 
-        string finalName = baseName;
-        int counter = 1;
-        while (File.Exists($"{folderPath}/{finalName}.asset"))
-        {
-            finalName = $"{baseName} {counter}";
-            counter++;
-        }
-
-        newData.name = finalName; // 内部名も更新
-        string path = $"{folderPath}/{finalName}.asset";
-
-        // 3. アセットとして一旦保存
-        UnityEditor.AssetDatabase.CreateAsset(newData, path);
-        UnityEditor.AssetDatabase.SaveAssets();
-
-        // 4. ★自動撮影の依頼（スタジオがあれば）
-        // エディター画面からでも、スタジオに「今作ったこれ撮って！」と頼みます
+        // 2. 撮影を依頼し、終わってから「FinalizeSave」を実行する
         if (KoiPhotoStudio.Instance != null)
         {
-            // エディター画面にはUIのRawImageがない場合が多いので、
-            // 第2引数は null でも動くようにスタジオ側が対応していればOKです
-            KoiPhotoStudio.Instance.RequestCapture(newData, null);
+            // 撮影が終わった瞬間に実行される処理（ラムダ式）を渡す
+            KoiPhotoStudio.Instance.RequestCapture(dataToSave, () => {
+                FinalizeSave(dataToSave, isOverwrite);
+            });
+        }
+#endif
+    }
+
+    private void FinalizeSave(KoiPatternData dataToSave, bool isOverwrite)
+    {
+#if UNITY_EDITOR
+        string baseName = fileNameInput.text;
+        // 名前が空ならデフォルト名。上書きなら現在のアセット名。
+        if (string.IsNullOrEmpty(baseName)) baseName = isOverwrite ? currentEditingAsset.name : "NewKoi";
+        
+        string folderPath = "Assets/KoiData";
+        string path = "";
+
+        if (!isOverwrite) 
+        {
+            // 【新規作成モード】名前が被っていたら番号を振る
+            string finalName = baseName;
+            int counter = 1;
+            while (File.Exists($"{folderPath}/{finalName}.asset"))
+            {
+                finalName = $"{baseName} {counter}";
+                counter++;
+            }
+            dataToSave.name = finalName; // 重複を避けた新しい名前
+            path = $"{folderPath}/{finalName}.asset";
+            UnityEditor.AssetDatabase.CreateAsset(dataToSave, path);
+        } 
+        else 
+        {
+            // 【編集（上書き）モード】現在のパスを維持しつつ、名前が変わっていればリネーム
+            path = UnityEditor.AssetDatabase.GetAssetPath(dataToSave);
+            
+            if (dataToSave.name != baseName) 
+            {
+                // 注意：編集画面でわざと「別の既存ファイル名」に変えた場合はリネームが失敗しますが、
+                // 基本的には今のファイルを書き換えるので番号は振りません。
+                UnityEditor.AssetDatabase.RenameAsset(path, baseName);
+                dataToSave.name = baseName;
+                path = UnityEditor.AssetDatabase.GetAssetPath(dataToSave); // リネーム後のパスを取得
+            }
         }
 
-        UnityEditor.AssetDatabase.Refresh();
-        Debug.Log($"<color=green>【Editor】</color> {finalName} を写真付きで保存しました！");
+        // --- 以下、写真の埋め込み処理（変更なし） ---
+        if (!string.IsNullOrEmpty(path)) 
+        {
+            Object[] subAssets = UnityEditor.AssetDatabase.LoadAllAssetsAtPath(path);
+            foreach (var sub in subAssets) {
+                if (sub is Texture2D && sub != dataToSave.photoTexture) {
+                    UnityEditor.AssetDatabase.RemoveObjectFromAsset(sub);
+                    DestroyImmediate(sub, true);
+                }
+            }
+            
+            if (dataToSave.photoTexture != null) {
+                dataToSave.photoTexture.name = "Photo_" + dataToSave.name;
+                if (!UnityEditor.AssetDatabase.IsSubAsset(dataToSave.photoTexture)) {
+                    UnityEditor.AssetDatabase.AddObjectToAsset(dataToSave.photoTexture, dataToSave);
+                }
+            }
+            
+            UnityEditor.EditorUtility.SetDirty(dataToSave);
+            UnityEditor.AssetDatabase.SaveAssets();
+            UnityEditor.AssetDatabase.ImportAsset(path, UnityEditor.ImportAssetOptions.ForceUpdate);
+        }
+        
+        // 保存が終わったら、今のデータを「編集中」としてセット（連続上書きを可能にする）
+        currentEditingAsset = dataToSave;
+
+        Debug.Log($"<color=cyan>【保存完了】</color> {(isOverwrite ? "上書き" : "新規")}保存しました：{dataToSave.name}");
 #endif
     }
 

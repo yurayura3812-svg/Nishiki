@@ -4406,6 +4406,11 @@ MonoBehaviour:
   crossPanel: {fileID: 1802171729}
   selectPanel: {fileID: 47771071}
   editorPanel: {fileID: 1590327731}
+  btnCreate: {fileID: 1315615473}
+  btnCross: {fileID: 1081219183}
+  btnEdit: {fileID: 741994116}
+  activeTabColor: {r: 0.6698113, g: 0, b: 0.11192584, a: 1}
+  inactiveTabColor: {r: 1, g: 1, b: 1, a: 1}
   rotationArea: {fileID: 1104121592}
   rotationResetButton: {fileID: 1482425447}
   nishikiModel: {fileID: 1406045462}

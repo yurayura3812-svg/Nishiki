@@ -29,6 +29,9 @@ public class KoiController : MonoBehaviour
             mpb.SetFloat("_Sub2Scale", patternData.sub2Scale);
             mpb.SetFloat("_Sub2Amount", patternData.sub2Amount);
 
+            mpb.SetFloat("_Sub1Detail", patternData.sub1Detail);
+            mpb.SetFloat("_Sub2Detail", patternData.sub2Detail);
+
             mpb.SetVector("_Seed", (Vector4)patternData.patternSeed);
             mpb.SetFloat("_BellyLimit", patternData.bellyLimit);
 

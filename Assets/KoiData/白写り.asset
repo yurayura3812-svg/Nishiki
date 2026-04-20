@@ -10,14 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6a8ef5377ffe2a5418b79faa88e82685, type: 3}
-  m_Name: ki
+  m_Name: "\u767D\u5199\u308A"
   m_EditorClassIdentifier: Assembly-CSharp::KoiPatternData
-  mainColor: {r: 0.63062453, g: 0.6067874, b: 0.07891035, a: 1}
-  sub1Color: {r: 0.6675619, g: 0.94319475, b: 0.81399405, a: 1}
-  sub1Scale: 3.571741
-  sub1Amount: 0.68418837
-  sub2Color: {r: 0.8296162, g: 0.83030164, b: 0.5997763, a: 1}
-  sub2Scale: 8.06065
-  sub2Amount: 0.74995565
-  patternSeed: {x: 12.40164, y: 9.509635, z: 94.714424}
+  mainColor: {r: 0.21024257, g: 0.21024257, b: 0.21024257, a: 1}
+  sub1Color: {r: 0.96452457, g: 0.9319328, b: 1, a: 1}
+  sub1Scale: 8.156326
+  sub1Amount: 0.8382743
+  sub1Detail: 1.4285715
+  sub2Color: {r: 0.1, g: 0.1, b: 0.1, a: 1}
+  sub2Scale: 3
+  sub2Amount: 0
+  sub2Detail: 0
+  patternSeed: {x: 23.892498, y: 75.313225, z: 12.752247}
   bellyLimit: 0

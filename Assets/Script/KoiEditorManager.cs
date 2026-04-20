@@ -57,7 +57,7 @@ public class KoiEditorManager : MonoBehaviour
         AddSetting("サブ1 色(B)", "_SubColor1B", 0, 1);
         AddSetting("サブ1 量", "_Sub1Amount", 0, 1);
         AddSetting("サブ1 大きさ", "_Sub1Scale", 0.5f, 10.0f);
-        AddSetting("サブ1 詳細", "_Sub1Detail", 0, 1);
+        AddSetting("サブ1 詳細", "_Sub1Detail", 0, 10);
         AddSetting("サブ2 色(R)", "_SubColor2R", 0, 1);
         AddSetting("サブ2 色(G)", "_SubColor2G", 0, 1);
         AddSetting("サブ2 色(B)", "_SubColor2B", 0, 1);
@@ -227,7 +227,6 @@ public class KoiEditorManager : MonoBehaviour
     { 
         UpdateUIVisibility(); 
     }
-
     void UpdateUIVisibility()
     {
         bool isAdvanced = (seedToggle != null && seedToggle.isOn);
@@ -238,9 +237,23 @@ public class KoiEditorManager : MonoBehaviour
             bool shouldShow = true;
             string p = row.propertyName;
 
-            if (p.Contains("Color") || p.Contains("Seed")) { if (!isAdvanced) shouldShow = false; }
-            if (p.Contains("Sub1")) { if (currentMode == KoiMode.Single) shouldShow = false; }
-            if (p.Contains("Sub2")) { if (currentMode != KoiMode.Triple) shouldShow = false; }
+            // ① 詳細設定の判定：ColorかSeedが含まれるものは、詳細設定OFFなら隠す
+            if (p.Contains("Color") || p.Contains("Seed")) 
+            { 
+                if (!isAdvanced) shouldShow = false; 
+            }
+
+            // ② サブ1の判定（修正！）：「Sub1」または「SubColor1」が含まれるものは、単色モードなら絶対に隠す！
+            if (p.Contains("Sub1") || p.Contains("SubColor1")) 
+            { 
+                if (currentMode == KoiMode.Single) shouldShow = false; 
+            }
+
+            // ③ サブ2の判定（修正！）：「Sub2」または「SubColor2」が含まれるものは、3色モード以外なら絶対に隠す！
+            if (p.Contains("Sub2") || p.Contains("SubColor2")) 
+            { 
+                if (currentMode != KoiMode.Triple) shouldShow = false; 
+            }
 
             row.gameObject.SetActive(shouldShow);
         }

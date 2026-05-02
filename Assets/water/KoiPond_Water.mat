@@ -1,0 +1,82 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: KoiPond_Water
+  m_Shader: {fileID: 4800000, guid: 171d330611b9aff46a0f411a38b754d4, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _CausticsTex:
+        m_Texture: {fileID: 2800000, guid: 7a0a878d4a545394984f67663b971c69, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _FoamNoise:
+        m_Texture: {fileID: 2800000, guid: 7a0a878d4a545394984f67663b971c69, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalMapA:
+        m_Texture: {fileID: 2800000, guid: 7c812fcdd8fb33e4e8f109637a3b842f, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalMapB:
+        m_Texture: {fileID: 2800000, guid: fcd363e3e9731b14b9cd6d99006f4041, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _RippleTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _CausticsStrength: 0.005
+    - _CausticsTiling: 0.5
+    - _ColorBlendDistance: 5
+    - _ColorBlendPower: 1.5
+    - _DepthGradientPower: 1.5
+    - _DepthMaxDistance: 3
+    - _FoamCutoff: 0.55
+    - _FoamDistance: 0.35
+    - _FresnelBias: 0.04
+    - _FresnelPower: 4
+    - _NormalStrength: 2
+    - _NormalTiling: 1
+    - _ReflectionStrength: 0.6
+    - _RefractionStrength: 0.1
+    - _RippleAreaSize: 20
+    - _RippleHeightStrength: 0.4
+    - _RippleNormalStrength: 1.5
+    - _Smoothness: 1
+    - _SpecularStrength: 4
+    - _WaveSpeed: 1
+    m_Colors:
+    - _CausticsSpeed: {r: 0.03, g: 0.04, b: 0, a: 0}
+    - _DeepColor: {r: 0.082146674, g: 0.20734431, b: 0.24528301, a: 1}
+    - _FoamColor: {r: 1, g: 1, b: 1, a: 1}
+    - _FoamSpeed: {r: 0.04, g: 0.02, b: 0, a: 0}
+    - _NormalSpeedA: {r: 0.02, g: 0.015, b: 0, a: 0}
+    - _NormalSpeedB: {r: -0.015, g: 0.025, b: 0, a: 0}
+    - _RippleAreaCenter: {r: 0, g: 1.07, b: 0, a: 0}
+    - _ShallowColor: {r: 0.45, g: 0.75, b: 0.65, a: 0.12941177}
+    - _SunColor: {r: 1, g: 0.95, b: 0.85, a: 1}
+    - _WaveA: {r: 1, g: 0.15, b: 0.25, a: 6}
+    - _WaveB: {r: 0.4, g: 0.1, b: 0.2, a: 4}
+    - _WaveC: {r: -0.7, g: 0.08, b: 0.15, a: 2.5}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

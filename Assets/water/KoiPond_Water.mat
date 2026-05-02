@@ -47,7 +47,7 @@ Material:
     m_Floats:
     - _CausticsStrength: 0.005
     - _CausticsTiling: 0.5
-    - _ColorBlendDistance: 5
+    - _ColorBlendDistance: 4
     - _ColorBlendPower: 1.5
     - _DepthGradientPower: 1.5
     - _DepthMaxDistance: 3
@@ -55,28 +55,28 @@ Material:
     - _FoamDistance: 0.35
     - _FresnelBias: 0.04
     - _FresnelPower: 4
-    - _NormalStrength: 2
-    - _NormalTiling: 1
+    - _NormalStrength: 1
+    - _NormalTiling: 0.8
     - _ReflectionStrength: 0.6
-    - _RefractionStrength: 0.1
+    - _RefractionStrength: 0
     - _RippleAreaSize: 20
     - _RippleHeightStrength: 0.4
-    - _RippleNormalStrength: 1.5
+    - _RippleNormalStrength: 0.6
     - _Smoothness: 1
     - _SpecularStrength: 4
-    - _WaveSpeed: 1
+    - _WaveSpeed: 0.5
     m_Colors:
     - _CausticsSpeed: {r: 0.03, g: 0.04, b: 0, a: 0}
-    - _DeepColor: {r: 0.082146674, g: 0.20734431, b: 0.24528301, a: 1}
+    - _DeepColor: {r: 0.08214667, g: 0.20734426, b: 0.24528295, a: 0.5019608}
     - _FoamColor: {r: 1, g: 1, b: 1, a: 1}
     - _FoamSpeed: {r: 0.04, g: 0.02, b: 0, a: 0}
     - _NormalSpeedA: {r: 0.02, g: 0.015, b: 0, a: 0}
     - _NormalSpeedB: {r: -0.015, g: 0.025, b: 0, a: 0}
-    - _RippleAreaCenter: {r: 0, g: 1.07, b: 0, a: 0}
+    - _RippleAreaCenter: {r: -3.705, g: -2.27, b: 3.6097, a: 0}
     - _ShallowColor: {r: 0.45, g: 0.75, b: 0.65, a: 0.12941177}
-    - _SunColor: {r: 1, g: 0.95, b: 0.85, a: 1}
-    - _WaveA: {r: 1, g: 0.15, b: 0.25, a: 6}
-    - _WaveB: {r: 0.4, g: 0.1, b: 0.2, a: 4}
-    - _WaveC: {r: -0.7, g: 0.08, b: 0.15, a: 2.5}
+    - _SunColor: {r: 0.8509804, g: 0.93556815, b: 1, a: 1}
+    - _WaveA: {r: 1, g: 0.3, b: 0.08, a: 1.2}
+    - _WaveB: {r: 0.4, g: 0.9, b: 0.06, a: 0.8}
+    - _WaveC: {r: -0.7, g: 0.5, b: 0.04, a: 0.5}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

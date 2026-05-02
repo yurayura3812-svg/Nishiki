@@ -556,6 +556,7 @@ GameObject:
   - component: {fileID: 330585545}
   - component: {fileID: 330585544}
   - component: {fileID: 330585547}
+  - component: {fileID: 330585548}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -650,8 +651,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RenderShadows: 1
-  m_RequiresDepthTextureOption: 2
-  m_RequiresOpaqueTextureOption: 2
+  m_RequiresDepthTextureOption: 1
+  m_RequiresOpaqueTextureOption: 1
   m_CameraType: 0
   m_Cameras: []
   m_RendererIndex: -1
@@ -681,6 +682,24 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!114 &330585548
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 330585543}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba7b6dd9301e3084fa051ba5cdbbd0d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::KoiPond.RefractionCameraSetup
+  resolutionScale: 0.75
+  viewExpansion: 1.25
+  excludeFromRefraction:
+    serializedVersion: 2
+    m_Bits: 16
+  waterMaterial: {fileID: 2100000, guid: e5bfac1ae567100448c54c3d5a37f88b, type: 2}
 --- !u!1 &367672628
 GameObject:
   m_ObjectHideFlags: 0
@@ -887,6 +906,87 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!1001 &432783499
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 8ff363c28323c3c40920d656336d4a75, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 500
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 8ff363c28323c3c40920d656336d4a75, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 500
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 8ff363c28323c3c40920d656336d4a75, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 500
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 8ff363c28323c3c40920d656336d4a75, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 8ff363c28323c3c40920d656336d4a75, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 8ff363c28323c3c40920d656336d4a75, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 8ff363c28323c3c40920d656336d4a75, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071067
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 8ff363c28323c3c40920d656336d4a75, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 8ff363c28323c3c40920d656336d4a75, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 8ff363c28323c3c40920d656336d4a75, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 8ff363c28323c3c40920d656336d4a75, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 8ff363c28323c3c40920d656336d4a75, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 8ff363c28323c3c40920d656336d4a75, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 8ff363c28323c3c40920d656336d4a75, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: 8ff363c28323c3c40920d656336d4a75, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: e5bfac1ae567100448c54c3d5a37f88b, type: 2}
+    - target: {fileID: 919132149155446097, guid: 8ff363c28323c3c40920d656336d4a75, type: 3}
+      propertyPath: m_Name
+      value: water (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 8ff363c28323c3c40920d656336d4a75, type: 3}
+      propertyPath: m_Layer
+      value: 4
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 8ff363c28323c3c40920d656336d4a75, type: 3}
 --- !u!1 &536926350
 GameObject:
   m_ObjectHideFlags: 0
@@ -1376,6 +1476,60 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 781437017}
   m_CullTransparentMesh: 1
+--- !u!1 &789315145
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 789315147}
+  - component: {fileID: 789315146}
+  m_Layer: 0
+  m_Name: RippleSimulater
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &789315146
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 789315145}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3b3621aa0d5db954689d94095ee38549, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::KoiPond.RippleSimulator
+  areaSize: 20
+  resolution: 512
+  damping: 0.985
+  speed: 0.35
+  simStepsPerSecond: 60
+  rippleMaterial: {fileID: 2100000, guid: 9cdbf643f78469745b511e0a05b5fb06, type: 2}
+  waterMaterial: {fileID: 2100000, guid: e5bfac1ae567100448c54c3d5a37f88b, type: 2}
+  clickToSplash: 0
+  clickStrength: 0.6
+  clickRadiusUV: 0.02
+--- !u!4 &789315147
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 789315145}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -3.705, y: -2.27, z: 3.6097}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1080831524
 GameObject:
   m_ObjectHideFlags: 0
@@ -2811,7 +2965,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 2ff87b83e8d2dcb4a85e52a2c0a51a41, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -3136,3 +3290,5 @@ SceneRoots:
   - {fileID: 1422020989}
   - {fileID: 1376913816}
   - {fileID: 1247453031}
+  - {fileID: 432783499}
+  - {fileID: 789315147}

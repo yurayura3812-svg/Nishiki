@@ -303,6 +303,13 @@ Shader "KoiPond/Water"
                 float fresnel = _FresnelBias + (1.0 - _FresnelBias) * pow(1.0 - saturate(dot(normalWS, viewDirWS)), _FresnelPower);
 
                 float3 reflDir = reflect(-viewDirWS, normalWS);
+
+                // 上から見下ろす視点だと反射方向が真下(=水中)を向いてしまい
+                // Skybox(空)が映らないので、reflDir を上半球に折り返す。
+                // これで真上から見ても水面に空(HDRI)が映るようになる。
+                if (reflDir.y < 0.0)
+                    reflDir.y = -reflDir.y;
+
                 half3 reflProbe = GlossyEnvironmentReflection(reflDir, IN.positionWS, 1 - _Smoothness, 1.0);
 
                 float3 H = normalize(lightDir + viewDirWS);

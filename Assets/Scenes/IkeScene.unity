@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 2
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
+  m_SkyboxMaterial: {fileID: 2100000, guid: 40d3c0570ea6ecd4182f583b0a517b96, type: 2}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -93,7 +93,7 @@ LightmapSettings:
     m_ExportTrainingData: 0
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
-  m_LightingDataAsset: {fileID: 20201, guid: 0000000000000000f000000000000000, type: 0}
+  m_LightingDataAsset: {fileID: 112000000, guid: 4fe2a833adaed8f4f9ea6b8c6db13c66, type: 2}
   m_LightingSettings: {fileID: 0}
 --- !u!196 &4
 NavMeshSettings:
@@ -932,7 +932,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 8ff363c28323c3c40920d656336d4a75, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.5
+      value: 1.25
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 8ff363c28323c3c40920d656336d4a75, type: 3}
       propertyPath: m_LocalPosition.z
@@ -1348,7 +1348,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!215 &728023976
 ReflectionProbe:
   m_ObjectHideFlags: 0
@@ -1507,14 +1507,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::KoiPond.RippleSimulator
   areaSize: 20
   resolution: 512
-  damping: 0.985
-  speed: 0.35
+  damping: 0.99
+  speed: 0.4
   simStepsPerSecond: 60
   rippleMaterial: {fileID: 2100000, guid: 9cdbf643f78469745b511e0a05b5fb06, type: 2}
   waterMaterial: {fileID: 2100000, guid: e5bfac1ae567100448c54c3d5a37f88b, type: 2}
-  clickToSplash: 0
-  clickStrength: 0.6
-  clickRadiusUV: 0.02
+  clickToSplash: 1
+  clickStrength: 0.3
+  clickRadiusUV: 0.01
+  waterY: 1.25
 --- !u!4 &789315147
 Transform:
   m_ObjectHideFlags: 0
@@ -1524,7 +1525,7 @@ Transform:
   m_GameObject: {fileID: 789315145}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3.705, y: -2.27, z: 3.6097}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

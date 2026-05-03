@@ -199,16 +199,23 @@ Shader "KoiPond/Water"
                 float3 posWS = TransformObjectToWorld(IN.positionOS.xyz);
                 float t = _Time.y;
 
+                // 先に波紋を取得して、Gerstner波の強度を抑制する係数を作る
+                // 波紋が強い場所ほど Gerstner 波を弱める（表面張力的な近似）
+                // 勾配ではなく高さ R のみで判定（勾配は浮動小数点誤差で常に微小値が出るため）
+                float3 ripple = SampleRipple(posWS);
+                float rippleActivity = saturate(abs(ripple.x) * 6.0);
+                float gerstnerScale = 1.0 - rippleActivity * 0.85; // 最大85%抑制
+
                 float3 tangent   = float3(1, 0, 0);
                 float3 bitangent = float3(0, 0, 1);
                 float3 offset = 0;
                 offset += GerstnerWave(_WaveA, posWS, tangent, bitangent, t);
                 offset += GerstnerWave(_WaveB, posWS, tangent, bitangent, t);
                 offset += GerstnerWave(_WaveC, posWS, tangent, bitangent, t);
+                offset *= gerstnerScale;
 
                 posWS += offset;
 
-                float3 ripple = SampleRipple(posWS);
                 posWS.y += ripple.x * _RippleHeightStrength;
 
                 float3 normalFromWaves = normalize(cross(bitangent, tangent));
@@ -250,12 +257,19 @@ Shader "KoiPond/Water"
             {
                 float t = _Time.y;
 
+                // 波紋を先に読み取る
+                float3 ripple = SampleRipple(IN.positionWS);
+                float rippleActivity = saturate(abs(ripple.x) * 6.0);
+
                 // ===== 表面法線 =====
+                // Normal Map のさざ波は波紋がある場所では弱める（表面張力的な近似）
                 float3 nTS = SampleAnimatedNormal(IN.positionWS, t);
+                nTS.xy *= (1.0 - rippleActivity * 0.85);
+                nTS = normalize(nTS);
+
                 float3x3 TBN = float3x3(normalize(IN.tangentWS), normalize(IN.bitangentWS), normalize(IN.normalWS));
                 float3 normalWS = normalize(mul(nTS, TBN));
 
-                float3 ripple = SampleRipple(IN.positionWS);
                 normalWS = normalize(normalWS + float3(ripple.y, 0, ripple.z) * _RippleNormalStrength);
 
                 // ===== ベクトル =====
@@ -293,16 +307,20 @@ Shader "KoiPond/Water"
                 float3 throughWater = lerp(refractedScene, waterColor.rgb, waterColor.a * (0.3 + depthFactor * 0.7));
 
                 // ===== Caustics =====
-                float2 cuv = IN.positionWS.xz * _CausticsTiling + _CausticsSpeed.xy * t;
-                float c1 = SAMPLE_TEXTURE2D(_CausticsTex, sampler_CausticsTex, cuv).r;
-                float c2 = SAMPLE_TEXTURE2D(_CausticsTex, sampler_CausticsTex, cuv * 1.37 - _CausticsSpeed.xy * t * 0.5).r;
-                float caustics = min(c1, c2) * _CausticsStrength * (1.0 - depthFactor * 0.5);
-                throughWater += caustics * _SunColor.rgb;
+                // 水底の Caustics は URP Decal Projector で別途投影しているのでここでは何もしない。
+                // (旧: 水面に直接 Caustics を加算していたが、水底ではなく水面に光って見える問題があったため除去)
 
                 // ===== 反射 =====
                 float fresnel = _FresnelBias + (1.0 - _FresnelBias) * pow(1.0 - saturate(dot(normalWS, viewDirWS)), _FresnelPower);
 
                 float3 reflDir = reflect(-viewDirWS, normalWS);
+
+                // 上から見下ろす視点だと反射方向が真下(=水中)を向いてしまい
+                // Skybox(空)が映らないので、reflDir を上半球に折り返す。
+                // これで真上から見ても水面に空(HDRI)が映るようになる。
+                if (reflDir.y < 0.0)
+                    reflDir.y = -reflDir.y;
+
                 half3 reflProbe = GlossyEnvironmentReflection(reflDir, IN.positionWS, 1 - _Smoothness, 1.0);
 
                 float3 H = normalize(lightDir + viewDirWS);

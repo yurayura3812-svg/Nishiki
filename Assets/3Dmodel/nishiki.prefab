@@ -106,7 +106,20 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 3dfc5d92ee6e9b14bb7f91131c9caa95, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2170891051712953757}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 3dfc5d92ee6e9b14bb7f91131c9caa95, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8431925226591695723}
   m_SourcePrefab: {fileID: 100100000, guid: 3dfc5d92ee6e9b14bb7f91131c9caa95, type: 3}
+--- !u!4 &225888880764289533 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7100456610028221731, guid: 3dfc5d92ee6e9b14bb7f91131c9caa95, type: 3}
+  m_PrefabInstance: {fileID: 7037832192242021598}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &4507204644905071278 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -2366736532843641232, guid: 3dfc5d92ee6e9b14bb7f91131c9caa95, type: 3}
+  m_PrefabInstance: {fileID: 7037832192242021598}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &7884130344912931215 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 3dfc5d92ee6e9b14bb7f91131c9caa95, type: 3}
@@ -162,6 +175,9 @@ MonoBehaviour:
   rotationSpeed: 0.5
   bankAmount: 10
   bankSpeed: 5
+  pitchAmount: 18
+  viewDistance: 1.5
+  viewAngle: 110
 --- !u!114 &4376051691066803143
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -225,3 +241,34 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 84
   m_CollisionDetection: 0
+--- !u!114 &8431925226591695723
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7884130344912931215}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eef7c76be66e8c240a91e34ab1044ec3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::KoiPond.KoiRippleEmitter
+  simulator: {fileID: 0}
+  tailBone: {fileID: 225888880764289533}
+  headPoint: {fileID: 4507204644905071278}
+  waterY: 1.25
+  emitMaxDepth: 5
+  minSpeedForBow: 0.001
+  bowStrengthMul: 0.02
+  bowRadius: 0.35
+  tailStrengthMul: 0.5
+  tailRadius: 0.15
+  tailVelDamping: 8
+  tailSwingThreshold: 0.01
+  splashYThreshold: 0.05
+  splashStrength: 0
+  splashRadius: 0.5
+  splashCooldown: 0.4
+  emitBodyDisplacement: 1
+  bodyStrength: -0.001
+  bodyRadius: 0.4

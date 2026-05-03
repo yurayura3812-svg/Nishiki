@@ -29,8 +29,8 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Damping: 0.985
-    - _Speed: 0.35
+    - _Damping: 0.99
+    - _Speed: 0.4
     - _TexelSize: 0.001953125
     m_Colors: []
   m_BuildTextureStacks: []

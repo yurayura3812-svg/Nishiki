@@ -35,6 +35,8 @@ namespace KoiPond
         public bool clickToSplash = false;       // エディタ確認用
         public float clickStrength = 0.6f;
         public float clickRadiusUV = 0.02f;
+        [Tooltip("Click To Splash 用の水面 Y 座標。RippleSimulator の位置と水面の高さが違う場合に使う")]
+        public float waterY = 0f;
 
         // --- ランタイム ---
         RenderTexture _rtA, _rtB;
@@ -136,7 +138,8 @@ namespace KoiPond
                 if (cam != null)
                 {
                     Ray r = cam.ScreenPointToRay(Input.mousePosition);
-                    Plane plane = new Plane(Vector3.up, transform.position);
+                    // 水面 Y にあるプレーンとレイを交差させる
+                    Plane plane = new Plane(Vector3.up, new Vector3(0, waterY, 0));
                     if (plane.Raycast(r, out float enter))
                     {
                         AddImpulseWorld(r.GetPoint(enter), areaSize * clickRadiusUV, clickStrength);

@@ -41,6 +41,8 @@ namespace KoiPond
         public float tailRadius = 0.25f;
         [Tooltip("尾の位置変化を検知する平滑化の強さ")]
         public float tailVelDamping = 8f;
+        [Tooltip("尾の振りがこの値以上で波が出る。鯉のアニメーションの規模に合わせて調整")]
+        public float tailSwingThreshold = 0.01f;
 
         [Header("Splash (跳ね上げ)")]
         public float splashYThreshold = 0.05f;   // 水面より上に出た時
@@ -61,6 +63,7 @@ namespace KoiPond
         bool    _wasAboveWater;
         float   _splashCooldownLeft;
         int     _warmupFramesLeft; // 起動直後の不安定な数フレームをスキップ
+        float   _debugLogTimer;    // デバッグログを 1秒に1回出すためのタイマー
 
         void Reset()
         {
@@ -83,7 +86,7 @@ namespace KoiPond
             }
 
             _prevPos = transform.position;
-            if (tailBone != null) _prevTailLocal = tailBone.localPosition;
+            if (tailBone != null) _prevTailLocal = transform.InverseTransformPoint(tailBone.position);
             // 最初の数フレームはインパルスを出さない（Animator や 物理の初期化で速度が暴れるため）
             _warmupFramesLeft = 5;
             _wasAboveWater = transform.position.y > waterY + splashYThreshold;
@@ -103,7 +106,7 @@ namespace KoiPond
             {
                 _warmupFramesLeft--;
                 _prevPos = pos;
-                if (tailBone != null) _prevTailLocal = tailBone.localPosition;
+                if (tailBone != null) _prevTailLocal = transform.InverseTransformPoint(tailBone.position);
                 _wasAboveWater = pos.y > waterY + splashYThreshold;
                 return;
             }
@@ -118,6 +121,20 @@ namespace KoiPond
 
             float depthBelowSurface = waterY - pos.y; // +なら水中
             bool nearSurface = depthBelowSurface > -0.05f && depthBelowSurface < emitMaxDepth;
+
+            // ---- デバッグログ (1秒に1回だけ出力) ----
+            _debugLogTimer -= dt;
+            if (_debugLogTimer <= 0f)
+            {
+                _debugLogTimer = 1f;
+                float tailSwing = (tailBone != null) ? Mathf.Abs(_smoothedTailVel.x) : 0f;
+                Debug.Log(
+                    $"[KoiRippleEmitter] {name}: " +
+                    $"pos.y={pos.y:F2}, waterY={waterY:F2}, depthBelowSurface={depthBelowSurface:F2}, " +
+                    $"emitMaxDepth={emitMaxDepth:F2}, nearSurface={nearSurface}, " +
+                    $"speed={vel.magnitude:F2}, tailSwing={tailSwing:F3}",
+                    this);
+            }
 
             // ---- Splash (水面を出入り) ----
             bool aboveWater = pos.y > waterY + splashYThreshold;
@@ -145,21 +162,22 @@ namespace KoiPond
             }
 
             // ---- Tail wake (尾びれの振り) ----
+            // ボーンのワールド位置から鯉本体（自身の Transform）相対の位置を計算し、その変化を検知。
+            // localPosition ではなく InverseTransformPoint を使うことで、回転で振られている尾も拾える。
             if (tailBone != null)
             {
-                Vector3 tailLocal = tailBone.localPosition;
+                Vector3 tailLocal = transform.InverseTransformPoint(tailBone.position);
                 Vector3 tailLocalVel = (tailLocal - _prevTailLocal) / dt;
                 _prevTailLocal = tailLocal;
                 _smoothedTailVel = Vector3.Lerp(_smoothedTailVel, tailLocalVel, 1f - Mathf.Exp(-tailVelDamping * dt));
 
-                // 横方向（local X）成分の振りを検知
+                // 鯉ローカルの X 成分の振りを検知（左右の振り）
                 float swing = Mathf.Abs(_smoothedTailVel.x);
-                if (swing > 0.05f)
+                if (swing > tailSwingThreshold)
                 {
                     Vector3 tailWS = tailBone.position;
                     Vector3 tailPos = new Vector3(tailWS.x, waterY, tailWS.z);
                     float surfaceFalloff = 1f - Mathf.Clamp01(Mathf.Abs(depthBelowSurface) / emitMaxDepth);
-                    // 振りの符号で凸凹交互に
                     float sign = Mathf.Sign(_smoothedTailVel.x);
                     simulator.AddImpulseWorld(tailPos, tailRadius, sign * swing * tailStrengthMul * surfaceFalloff);
                 }

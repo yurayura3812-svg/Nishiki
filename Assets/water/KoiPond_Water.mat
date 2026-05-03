@@ -24,7 +24,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _CausticsTex:
-        m_Texture: {fileID: 2800000, guid: 7a0a878d4a545394984f67663b971c69, type: 3}
+        m_Texture: {fileID: 2800000, guid: cf87ae0a49ccde843b98b359ac13d3a7, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _FoamNoise:
@@ -45,9 +45,9 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _CausticsStrength: 0.005
-    - _CausticsTiling: 0.5
-    - _ColorBlendDistance: 5
+    - _CausticsStrength: 0
+    - _CausticsTiling: -1.07
+    - _ColorBlendDistance: 4
     - _ColorBlendPower: 1.5
     - _DepthGradientPower: 1.5
     - _DepthMaxDistance: 3
@@ -55,28 +55,28 @@ Material:
     - _FoamDistance: 0.35
     - _FresnelBias: 0.04
     - _FresnelPower: 4
-    - _NormalStrength: 2
-    - _NormalTiling: 1
+    - _NormalStrength: 1.5
+    - _NormalTiling: 0.4
     - _ReflectionStrength: 0.6
-    - _RefractionStrength: 0.1
+    - _RefractionStrength: 0.0401
     - _RippleAreaSize: 20
     - _RippleHeightStrength: 0.4
-    - _RippleNormalStrength: 1.5
-    - _Smoothness: 1
-    - _SpecularStrength: 4
-    - _WaveSpeed: 1
+    - _RippleNormalStrength: 0.56
+    - _Smoothness: 0.9
+    - _SpecularStrength: 0.01
+    - _WaveSpeed: 1.5
     m_Colors:
-    - _CausticsSpeed: {r: 0.03, g: 0.04, b: 0, a: 0}
-    - _DeepColor: {r: 0.082146674, g: 0.20734431, b: 0.24528301, a: 1}
+    - _CausticsSpeed: {r: 0.15, g: 0.2, b: 0, a: 0}
+    - _DeepColor: {r: 0.050980397, g: 0.27115074, b: 0.5019608, a: 0.38431373}
     - _FoamColor: {r: 1, g: 1, b: 1, a: 1}
     - _FoamSpeed: {r: 0.04, g: 0.02, b: 0, a: 0}
-    - _NormalSpeedA: {r: 0.02, g: 0.015, b: 0, a: 0}
-    - _NormalSpeedB: {r: -0.015, g: 0.025, b: 0, a: 0}
-    - _RippleAreaCenter: {r: 0, g: 1.07, b: 0, a: 0}
-    - _ShallowColor: {r: 0.45, g: 0.75, b: 0.65, a: 0.12941177}
-    - _SunColor: {r: 1, g: 0.95, b: 0.85, a: 1}
-    - _WaveA: {r: 1, g: 0.15, b: 0.25, a: 6}
-    - _WaveB: {r: 0.4, g: 0.1, b: 0.2, a: 4}
-    - _WaveC: {r: -0.7, g: 0.08, b: 0.15, a: 2.5}
+    - _NormalSpeedA: {r: 0.05, g: 0.08, b: 0, a: 0}
+    - _NormalSpeedB: {r: -0.08, g: 0.1, b: 0, a: 0}
+    - _RippleAreaCenter: {r: 0, g: 0, b: 0, a: 0}
+    - _ShallowColor: {r: 0.27661088, g: 0.5283019, b: 0.4666129, a: 0.1254902}
+    - _SunColor: {r: 0.8820755, g: 0.98812777, b: 1, a: 0.44705883}
+    - _WaveA: {r: 1, g: 0.3, b: 0.04, a: 3}
+    - _WaveB: {r: 0.4, g: 0.9, b: 0.03, a: 2}
+    - _WaveC: {r: -0.7, g: 0.5, b: 0.02, a: 1.2}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

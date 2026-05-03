@@ -22,14 +22,14 @@ Shader "Custom/URP_Koi_Pattern_Managed"
         _BellyLimit("Belly White Limit", Float) = 0.0
         _PatternSoftness("Pattern Softness", Range(0.01, 0.5)) = 0.1
 
-        [Header(Caustics)]
-        _CausticsTex("Caustics Tex", 2D) = "black" {}
-        _CausticsStrength("Caustics Strength", Range(0, 3)) = 0.6
+        [Header(Caustics (Animated Array))]
+        [NoScaleOffset] _CausticsArray("Caustics Array (Texture2DArray)", 2DArray) = "" {}
+        _CausticsFrameCount("Caustics Frame Count", Range(2, 64)) = 16
+        _CausticsStrength("Caustics Strength", Range(0, 3)) = 1.0
         _CausticsTiling("Caustics Tiling", Float) = 0.4
-        _CausticsSpeed("Caustics Speed (XY)", Vector) = (0.05, 0.04, 0, 0)
-        _CausticsContrast("Caustics Contrast", Range(0.5, 4)) = 2.5
-        _CausticsCutoff("Caustics Cutoff", Range(0, 0.8)) = 0.3
+        _CausticsFps("Caustics FPS", Range(1, 60)) = 16
         _CausticsTint("Caustics Tint", Color) = (1, 1, 0.95, 1)
+        _CausticsContrast("Caustics Contrast", Range(0.5, 4)) = 1.5
     }
 
     SubShader
@@ -60,7 +60,7 @@ Shader "Custom/URP_Koi_Pattern_Managed"
             };
 
             TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
-            TEXTURE2D(_CausticsTex); SAMPLER(sampler_CausticsTex);
+            TEXTURE2D_ARRAY(_CausticsArray); SAMPLER(sampler_CausticsArray);
 
             CBUFFER_START(UnityPerMaterial)
                 float4 _BaseMap_ST;
@@ -70,14 +70,29 @@ Shader "Custom/URP_Koi_Pattern_Managed"
                 float _BellyLimit; float _PatternSoftness;
                 float4 _Seed;
 
-                float4 _CausticsTex_ST;
+                float _CausticsFrameCount;
                 float _CausticsStrength;
                 float _CausticsTiling;
-                float4 _CausticsSpeed;
-                float _CausticsContrast;
-                float _CausticsCutoff;
+                float _CausticsFps;
                 half4 _CausticsTint;
+                float _CausticsContrast;
             CBUFFER_END
+
+            // ============================================================
+            //   Animated Caustics (Texture2DArray)
+            // ============================================================
+            float SampleCausticsArray(float2 worldUV, float t)
+            {
+                int frameCount = (int)_CausticsFrameCount;
+                float frameFloat = t * _CausticsFps;
+                int frame0 = ((int)floor(frameFloat)) % frameCount;
+                int frame1 = (frame0 + 1) % frameCount;
+                float blend = frac(frameFloat);
+
+                float c0 = SAMPLE_TEXTURE2D_ARRAY(_CausticsArray, sampler_CausticsArray, worldUV, frame0).r;
+                float c1 = SAMPLE_TEXTURE2D_ARRAY(_CausticsArray, sampler_CausticsArray, worldUV, frame1).r;
+                return lerp(c0, c1, blend);
+            }
 
             // --- Noise Functions ---
             float hash(float3 p) {
@@ -137,13 +152,12 @@ Shader "Custom/URP_Koi_Pattern_Managed"
                 float3 finalRGB = finalColor * detailMask;
                 finalRGB += pow(detailMask, 8.0) * 0.12;
 
-                // ---- Caustics をワールド XZ から計算して上乗せ ----
+                // ---- Caustics (Texture2DArray アニメーション) ----
                 float t = _Time.y;
-                float2 cuv = IN.positionWS.xz * _CausticsTiling + _CausticsSpeed.xy * t;
-                float c1 = SAMPLE_TEXTURE2D(_CausticsTex, sampler_CausticsTex, cuv).r;
-                float c2 = SAMPLE_TEXTURE2D(_CausticsTex, sampler_CausticsTex, cuv * 1.37 - _CausticsSpeed.xy * t * 0.5).r;
-                float caustics = min(c1, c2);
-                caustics = saturate((caustics - _CausticsCutoff) * _CausticsContrast);
+                float2 worldUV = IN.positionWS.xz * _CausticsTiling;
+                float caustics = SampleCausticsArray(worldUV, t);
+                caustics = saturate(caustics * _CausticsContrast);
+
                 finalRGB += _CausticsTint.rgb * caustics * _CausticsStrength;
 
                 return half4(finalRGB, 1.0);

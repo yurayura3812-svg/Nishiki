@@ -27,6 +27,10 @@ Material:
         m_Texture: {fileID: 2800000, guid: 153acec382acd6f4b9e7ccd7e9defcef, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _CausticsArray:
+        m_Texture: {fileID: 18700000, guid: 6fb33023c838e714abb53bb85a019d17, type: 2}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _CausticsTex:
         m_Texture: {fileID: 2800000, guid: bbd6b7710f67f534f99d62c4500a6d01, type: 3}
         m_Scale: {x: 1, y: 1}
@@ -43,6 +47,8 @@ Material:
     - _BlackScale: 8
     - _CausticsContrast: 0.93
     - _CausticsCutoff: 0.039
+    - _CausticsFps: 16
+    - _CausticsFrameCount: 16
     - _CausticsStrength: 0.6
     - _CausticsTiling: 1
     - _Glossiness: 0.5

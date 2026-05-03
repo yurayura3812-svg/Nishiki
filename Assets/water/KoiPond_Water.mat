@@ -67,13 +67,13 @@ Material:
     - _WaveSpeed: 1.5
     m_Colors:
     - _CausticsSpeed: {r: 0.15, g: 0.2, b: 0, a: 0}
-    - _DeepColor: {r: 0.050980374, g: 0.25098038, b: 0.5019608, a: 0.38431373}
+    - _DeepColor: {r: 0.050980397, g: 0.27115074, b: 0.5019608, a: 0.38431373}
     - _FoamColor: {r: 1, g: 1, b: 1, a: 1}
     - _FoamSpeed: {r: 0.04, g: 0.02, b: 0, a: 0}
     - _NormalSpeedA: {r: 0.05, g: 0.08, b: 0, a: 0}
     - _NormalSpeedB: {r: -0.08, g: 0.1, b: 0, a: 0}
     - _RippleAreaCenter: {r: 0, g: 0, b: 0, a: 0}
-    - _ShallowColor: {r: 0.2980392, g: 0.69803923, b: 0.6, a: 0.1254902}
+    - _ShallowColor: {r: 0.27661088, g: 0.5283019, b: 0.4666129, a: 0.1254902}
     - _SunColor: {r: 0.8820755, g: 0.98812777, b: 1, a: 0.44705883}
     - _WaveA: {r: 1, g: 0.3, b: 0.04, a: 3}
     - _WaveB: {r: 0.4, g: 0.9, b: 0.03, a: 2}

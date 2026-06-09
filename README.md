@@ -20,4 +20,7 @@
 
 https://github.com/user-attachments/assets/17b57b70-f590-4a6d-be2e-8065a7d300ef
 
+## Credits
 
+- Caustics: [Water Caustics Effect](https://opengameart.org/content/water-caustics-effect-small) (OpenGameArt, CC0)
+- HDRI: [Mossy Forest](https://polyhaven.com/a/mossy_forest) (Poly Haven, CC0)

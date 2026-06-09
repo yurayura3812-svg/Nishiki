@@ -131,18 +131,40 @@ namespace KoiPond
             int steps = Mathf.Clamp(Mathf.FloorToInt(_accum / dt), 0, 4);
             _accum -= steps * dt;
 
-            // デバッグ用クリック
-            if (clickToSplash && Input.GetMouseButtonDown(0))
+            // デバッグ用クリック (新旧両方の Input System に対応)
+            if (clickToSplash)
             {
-                Camera cam = Camera.main;
-                if (cam != null)
+                bool clicked = false;
+                Vector2 mousePos = Vector2.zero;
+
+                #if ENABLE_INPUT_SYSTEM
+                if (UnityEngine.InputSystem.Mouse.current != null)
                 {
-                    Ray r = cam.ScreenPointToRay(Input.mousePosition);
-                    // 水面 Y にあるプレーンとレイを交差させる
-                    Plane plane = new Plane(Vector3.up, new Vector3(0, waterY, 0));
-                    if (plane.Raycast(r, out float enter))
+                    clicked = UnityEngine.InputSystem.Mouse.current.leftButton.wasPressedThisFrame;
+                    mousePos = UnityEngine.InputSystem.Mouse.current.position.ReadValue();
+                }
+                #endif
+
+                #if ENABLE_LEGACY_INPUT_MANAGER
+                // 旧 Input Manager がアクティブな場合のみ呼ぶ
+                if (!clicked)
+                {
+                    clicked = Input.GetMouseButtonDown(0);
+                    mousePos = Input.mousePosition;
+                }
+                #endif
+
+                if (clicked)
+                {
+                    Camera cam = Camera.main;
+                    if (cam != null)
                     {
-                        AddImpulseWorld(r.GetPoint(enter), areaSize * clickRadiusUV, clickStrength);
+                        Ray r = cam.ScreenPointToRay(new Vector3(mousePos.x, mousePos.y, 0));
+                        Plane plane = new Plane(Vector3.up, new Vector3(0, waterY, 0));
+                        if (plane.Raycast(r, out float enter))
+                        {
+                            AddImpulseWorld(r.GetPoint(enter), areaSize * clickRadiusUV, clickStrength);
+                        }
                     }
                 }
             }

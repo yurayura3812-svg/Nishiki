@@ -140,6 +140,10 @@ namespace KoiPond
             _refractionCam.orthographic      = _mainCam.orthographic;
             _refractionCam.cullingMask       = _mainCam.cullingMask & ~excludeFromRefraction.value;
 
+            // Aspect ratio を明示的に同期 (Play 切り替え時にメインカメラの aspect が変わって
+            //  屈折カメラと食い違うと、画面の片側だけ屈折が破綻するため)
+            _refractionCam.aspect = _mainCam.aspect;
+
             if (_mainCam.orthographic)
             {
                 _refractionCam.orthographicSize = _mainCam.orthographicSize * viewExpansion;

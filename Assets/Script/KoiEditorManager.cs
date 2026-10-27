@@ -407,79 +407,75 @@ public class KoiEditorManager : MonoBehaviour
 
     public void SaveAsAsset()
     {
-#if UNITY_EDITOR
         bool isOverwrite = (currentEditingAsset != null);
         KoiPatternData dataToSave = isOverwrite ? currentEditingAsset : ScriptableObject.CreateInstance<KoiPatternData>();
 
-        // 1. パラメータを代入（中身の更新）
         dataToSave.mainColor = new Color(GetValue("_MainColorR"), GetValue("_MainColorG"), GetValue("_MainColorB"), 1);
         float s1Amount = (currentMode == KoiMode.Single) ? 0 : GetValue("_Sub1Amount");
         float s2Amount = (currentMode == KoiMode.Triple) ? GetValue("_Sub2Amount") : 0;
-        
+
         dataToSave.sub1Color = new Color(GetValue("_SubColor1R"), GetValue("_SubColor1G"), GetValue("_SubColor1B"), 1);
-        dataToSave.sub1Amount = s1Amount; 
+        dataToSave.sub1Amount = s1Amount;
         dataToSave.sub1Scale = GetValue("_Sub1Scale");
         dataToSave.sub1Detail = GetValue("_Sub1Detail");
 
         dataToSave.sub2Color = new Color(GetValue("_SubColor2R"), GetValue("_SubColor2G"), GetValue("_SubColor2B"), 1);
-        dataToSave.sub2Amount = s2Amount; 
+        dataToSave.sub2Amount = s2Amount;
         dataToSave.sub2Scale = GetValue("_Sub2Scale");
         dataToSave.sub2Detail = GetValue("_Sub2Detail");
 
         dataToSave.patternSeed = new Vector3(GetValue("_SeedX"), GetValue("_SeedY"), GetValue("_SeedZ"));
 
-        // 2. 撮影を依頼し、終わってから「FinalizeSave」を実行する
         if (KoiPhotoStudio.Instance != null)
         {
-            // 撮影が終わった瞬間に実行される処理（ラムダ式）を渡す
             KoiPhotoStudio.Instance.RequestCapture(dataToSave, () => {
                 FinalizeSave(dataToSave, isOverwrite);
             });
         }
-#endif
+        else
+        {
+            FinalizeSave(dataToSave, isOverwrite);
+        }
     }
 
     private void FinalizeSave(KoiPatternData dataToSave, bool isOverwrite)
     {
+        string baseName = fileNameInput != null ? fileNameInput.text : "";
+        if (string.IsNullOrEmpty(baseName))
+            baseName = isOverwrite && currentEditingAsset != null ? currentEditingAsset.name : "NewKoi";
+
+        if (!isOverwrite)
+            dataToSave.name = KoiSaveStore.UniqueDisplayName(baseName);
+        else
+            dataToSave.name = baseName;
+
+        if (string.IsNullOrEmpty(dataToSave.koiId))
+            dataToSave.koiId = System.Guid.NewGuid().ToString("N");
+
+        KoiSaveStore.Save(dataToSave);
+
 #if UNITY_EDITOR
-        string baseName = fileNameInput.text;
-        // 名前が空ならデフォルト名。上書きなら現在のアセット名。
-        if (string.IsNullOrEmpty(baseName)) baseName = isOverwrite ? currentEditingAsset.name : "NewKoi";
-        
         string folderPath = "Assets/KoiData";
         string path = "";
 
-        if (!isOverwrite) 
+        if (!isOverwrite)
         {
-            // 【新規作成モード】名前が被っていたら番号を振る
-            string finalName = baseName;
-            int counter = 1;
-            while (File.Exists($"{folderPath}/{finalName}.asset"))
-            {
-                finalName = $"{baseName} {counter}";
-                counter++;
-            }
-            dataToSave.name = finalName; // 重複を避けた新しい名前
-            path = $"{folderPath}/{finalName}.asset";
-            UnityEditor.AssetDatabase.CreateAsset(dataToSave, path);
-        } 
-        else 
+            path = $"{folderPath}/{dataToSave.name}.asset";
+            if (!File.Exists(path))
+                UnityEditor.AssetDatabase.CreateAsset(dataToSave, path);
+        }
+        else
         {
-            // 【編集（上書き）モード】現在のパスを維持しつつ、名前が変わっていればリネーム
             path = UnityEditor.AssetDatabase.GetAssetPath(dataToSave);
-            
-            if (dataToSave.name != baseName) 
+            if (!string.IsNullOrEmpty(path) && dataToSave.name != baseName)
             {
-                // 注意：編集画面でわざと「別の既存ファイル名」に変えた場合はリネームが失敗しますが、
-                // 基本的には今のファイルを書き換えるので番号は振りません。
                 UnityEditor.AssetDatabase.RenameAsset(path, baseName);
                 dataToSave.name = baseName;
-                path = UnityEditor.AssetDatabase.GetAssetPath(dataToSave); // リネーム後のパスを取得
+                path = UnityEditor.AssetDatabase.GetAssetPath(dataToSave);
             }
         }
 
-        // --- 以下、写真の埋め込み処理（変更なし） ---
-        if (!string.IsNullOrEmpty(path)) 
+        if (!string.IsNullOrEmpty(path))
         {
             Object[] subAssets = UnityEditor.AssetDatabase.LoadAllAssetsAtPath(path);
             foreach (var sub in subAssets) {
@@ -488,24 +484,22 @@ public class KoiEditorManager : MonoBehaviour
                     DestroyImmediate(sub, true);
                 }
             }
-            
+
             if (dataToSave.photoTexture != null) {
                 dataToSave.photoTexture.name = "Photo_" + dataToSave.name;
                 if (!UnityEditor.AssetDatabase.IsSubAsset(dataToSave.photoTexture)) {
                     UnityEditor.AssetDatabase.AddObjectToAsset(dataToSave.photoTexture, dataToSave);
                 }
             }
-            
+
             UnityEditor.EditorUtility.SetDirty(dataToSave);
             UnityEditor.AssetDatabase.SaveAssets();
             UnityEditor.AssetDatabase.ImportAsset(path, UnityEditor.ImportAssetOptions.ForceUpdate);
         }
-        
-        // 保存が終わったら、今のデータを「編集中」としてセット（連続上書きを可能にする）
-        currentEditingAsset = dataToSave;
-
-        Debug.Log($"<color=cyan>【保存完了】</color> {(isOverwrite ? "上書き" : "新規")}保存しました：{dataToSave.name}");
 #endif
+
+        currentEditingAsset = dataToSave;
+        Debug.Log($"<color=cyan>【保存完了】</color> {(isOverwrite ? "上書き" : "新規")}保存しました：{dataToSave.name}");
     }
 
     void AddSetting(string l, string p, float min, float max) => settings.Add(new SliderSetting { label = l, propName = p, min = min, max = max });

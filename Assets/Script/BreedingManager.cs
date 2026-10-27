@@ -126,25 +126,14 @@ public class BreedingUIManager : MonoBehaviour
 
         foreach (Transform child in scrollViewContent) Destroy(child.gameObject);
 
-#if UNITY_EDITOR
-        string folderPath = "Assets/KoiData";
-        if (Directory.Exists(folderPath))
+        foreach (KoiPatternData data in KoiSaveStore.LoadAll())
         {
-            string[] guids = AssetDatabase.FindAssets("t:KoiPatternData", new[] { folderPath });
-            foreach (string guid in guids)
-            {
-                string path = AssetDatabase.GUIDToAssetPath(guid);
-                KoiPatternData data = AssetDatabase.LoadAssetAtPath<KoiPatternData>(path);
-                
-                if (data != null)
-                {
-                    GameObject btnObj = Instantiate(koiListButtonPrefab, scrollViewContent);
-                    KoiListButton koiBtn = btnObj.GetComponent<KoiListButton>();
-                    if (koiBtn != null) koiBtn.Setup(data, this); 
-                }
-            }
+            if (data == null) continue;
+            GameObject btnObj = Instantiate(koiListButtonPrefab, scrollViewContent);
+            KoiListButton koiBtn = btnObj.GetComponent<KoiListButton>();
+            if (koiBtn != null) koiBtn.Setup(data, this);
         }
-#endif
+
         selectPanel.SetActive(true);
     }
 
@@ -294,37 +283,27 @@ public class BreedingUIManager : MonoBehaviour
         string baseName = nameInput.text;
         if (string.IsNullOrEmpty(baseName)) baseName = "名無しの錦鯉";
 
+        string finalName = KoiSaveStore.UniqueDisplayName(baseName);
+        childData.name = finalName;
+        if (string.IsNullOrEmpty(childData.koiId))
+            childData.koiId = System.Guid.NewGuid().ToString("N");
+
+        KoiSaveStore.Save(childData);
+
 #if UNITY_EDITOR
         string folderPath = "Assets/KoiData";
-        
-        // フォルダがない場合は作成
         if (!Directory.Exists(folderPath))
-        {
             Directory.CreateDirectory(folderPath);
-        }
 
-        // 2. ★重複チェックのロジック
-        string finalName = baseName;
-        int counter = 1;
-        
-        // すでに「名前.asset」が存在するかチェックし、あれば「名前 1.asset」にする
-        while (File.Exists($"{folderPath}/{finalName}.asset"))
-        {
-            finalName = $"{baseName} {counter}";
-            counter++;
-        }
-
-        // 3. データに確定した名前を書き込む
-        childData.name = finalName; // ScriptableObject内部の名前変数も更新
-
-        // 4. 保存実行
         string path = $"{folderPath}/{finalName}.asset";
-        AssetDatabase.CreateAsset(childData, path);
-        AssetDatabase.SaveAssets();
-        AssetDatabase.Refresh();
-
-        Debug.Log($"<color=cyan>新種誕生！</color> {finalName} を保存しました！");
+        if (!File.Exists(path))
+        {
+            AssetDatabase.CreateAsset(childData, path);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+        }
 #endif
+        Debug.Log($"<color=cyan>新種誕生！</color> {finalName} を保存しました！");
         ResetUI();
     }
 }

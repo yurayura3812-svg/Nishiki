@@ -1,10 +1,5 @@
 using UnityEngine;
 using System.Collections.Generic;
-using System.IO;
-
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 
 public class KoiSpawner : MonoBehaviour
 {
@@ -28,25 +23,8 @@ public class KoiSpawner : MonoBehaviour
 
     void LoadAllPatternAssets()
     {
-#if UNITY_EDITOR
-        string folderPath = "Assets/KoiData";
-        if (!Directory.Exists(folderPath))
-        {
-            Directory.CreateDirectory(folderPath);
-            return;
-        }
-
-        string[] guids = AssetDatabase.FindAssets("t:KoiPatternData", new[] { folderPath });
-        dataList.Clear();
-
-        foreach (string guid in guids)
-        {
-            string path = AssetDatabase.GUIDToAssetPath(guid);
-            KoiPatternData data = AssetDatabase.LoadAssetAtPath<KoiPatternData>(path);
-            if (data != null) dataList.Add(data);
-        }
-        Debug.Log($"<color=cyan>KoiSpawner:</color> {dataList.Count}体の鯉データをフォルダから読み込みました。");
-#endif
+        dataList = KoiSaveStore.LoadAll();
+        Debug.Log($"<color=cyan>KoiSpawner:</color> {dataList.Count}体の鯉データを読み込みました。");
     }
 
     /// <summary>

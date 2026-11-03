@@ -330,7 +330,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91b2c3d4e5f60718293a4b5c6d7e8f90, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PondCustomUI
-  koiCardBackground: {fileID: 21300000, guid: ebf5ab36470fc5c47be2edd9df430bcc, type: 3}
+  koiCardBackground: {fileID: 0}
   floorCardBackground: {fileID: 0}
   detailButtonBackground: {fileID: 21300000, guid: a0c4195e54750a84ba226356baf94e38, type: 3}
   checkMark: {fileID: 2800000, guid: 16c9bd4ee1492274cb6cc8a3d782aa78, type: 3}

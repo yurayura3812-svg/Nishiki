@@ -89,6 +89,17 @@ public static class PondCustomStore
         return data.name;
     }
 
+    public static void RemoveSwimming(KoiPatternData data)
+    {
+        var save = Load();
+        if (save.swimmingKoiIds == null) return;
+        var key = KoiKey(data);
+        save.swimmingKoiIds.RemoveAll(id =>
+            id == key
+            || (data != null && (id == data.koiId || id == data.name)));
+        Save(save);
+    }
+
     public static List<KoiPatternData> FilterSwimming(List<KoiPatternData> all)
     {
         var save = Load();

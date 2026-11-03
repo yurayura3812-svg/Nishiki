@@ -44,7 +44,19 @@ public class HinpyokaiUI : MonoBehaviour
     {
         BuildEntries();
         FillRankList();
-        ShowDetail(0);
+        int start = 0;
+        if (!string.IsNullOrEmpty(KoiDetailGate.EnteredKoiKey))
+        {
+            for (int i = 0; i < entries.Count; i++)
+            {
+                if (entries[i].koi != null && KoiSaveStore.KeyOf(entries[i].koi) == KoiDetailGate.EnteredKoiKey)
+                {
+                    start = i;
+                    break;
+                }
+            }
+        }
+        ShowDetail(start);
     }
 
     void WireJoin()
@@ -65,21 +77,20 @@ public class HinpyokaiUI : MonoBehaviour
             Debug.Log("HinpyokaiUI: 出す鯉がありません。");
             return;
         }
-        Refresh();
+        KoiDetailGate.OpenListForJudging();
     }
 
     void BuildEntries()
     {
         entries.Clear();
-        var all = KoiSaveStore.LoadAll();
-        if (all == null) return;
-        foreach (var koi in all)
+        foreach (var key in HinpyokaiEntryStore.LoadKeys())
         {
+            var koi = KoiSaveStore.Find(key);
             if (koi == null) continue;
             entries.Add(new Entry
             {
                 koi = koi,
-                owner = "User name",
+                owner = string.IsNullOrEmpty(koi.name) ? "鯉" : koi.name,
                 score = HinpyokaiScore.From(koi)
             });
         }
@@ -88,13 +99,70 @@ public class HinpyokaiUI : MonoBehaviour
 
     void FillRankList()
     {
-        var body = FindPath("RankPanel", "Body");
-        if (body == null) return;
-        ClearChildren(body);
+        var content = EnsureRankScroll();
+        if (content == null) return;
+        ClearChildren(content);
 
-        int n = Mathf.Min(entries.Count, 5);
-        for (int i = 0; i < n; i++)
-            CreateRow(body, i, entries[i]);
+        for (int i = 0; i < entries.Count; i++)
+            CreateRow(content, i, entries[i]);
+    }
+
+    RectTransform EnsureRankScroll()
+    {
+        var body = FindPath("RankPanel", "Body");
+        if (body == null) return null;
+        var content = FindPath("RankPanel", "Body", "RankScroll", "Viewport", "Content");
+        if (content != null) return content;
+
+        var scrollGo = new GameObject("RankScroll", typeof(RectTransform));
+        var scrollRt = scrollGo.GetComponent<RectTransform>();
+        scrollRt.SetParent(body, false);
+        Stretch(scrollRt);
+        var scroll = scrollGo.AddComponent<ScrollRect>();
+        scroll.horizontal = false;
+        scroll.vertical = true;
+        scroll.movementType = ScrollRect.MovementType.Elastic;
+        scroll.scrollSensitivity = 40f;
+
+        var viewportGo = new GameObject("Viewport", typeof(RectTransform));
+        var viewport = viewportGo.GetComponent<RectTransform>();
+        viewport.SetParent(scrollRt, false);
+        Stretch(viewport);
+        var hit = viewportGo.AddComponent<Image>();
+        hit.color = new Color(1, 1, 1, 0);
+        viewportGo.AddComponent<RectMask2D>();
+
+        var contentGo = new GameObject("Content", typeof(RectTransform));
+        content = contentGo.GetComponent<RectTransform>();
+        content.SetParent(viewport, false);
+        content.anchorMin = new Vector2(0, 1);
+        content.anchorMax = new Vector2(1, 1);
+        content.pivot = new Vector2(0.5f, 1);
+        content.anchoredPosition = Vector2.zero;
+        content.sizeDelta = Vector2.zero;
+
+        var layout = contentGo.AddComponent<VerticalLayoutGroup>();
+        layout.padding = new RectOffset(0, 0, 8, 8);
+        layout.spacing = 8f;
+        layout.childAlignment = TextAnchor.UpperCenter;
+        layout.childControlWidth = true;
+        layout.childControlHeight = true;
+        layout.childForceExpandWidth = true;
+        layout.childForceExpandHeight = false;
+        var fitter = contentGo.AddComponent<ContentSizeFitter>();
+        fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+        scroll.viewport = viewport;
+        scroll.content = content;
+        return content;
+    }
+
+    static void Stretch(RectTransform rt)
+    {
+        rt.anchorMin = Vector2.zero;
+        rt.anchorMax = Vector2.one;
+        rt.offsetMin = Vector2.zero;
+        rt.offsetMax = Vector2.zero;
     }
 
     void CreateRow(RectTransform parent, int index, Entry entry)
@@ -102,11 +170,9 @@ public class HinpyokaiUI : MonoBehaviour
         var go = new GameObject("Rank_" + (index + 1), typeof(RectTransform));
         var rt = go.GetComponent<RectTransform>();
         rt.SetParent(parent, false);
-        rt.anchorMin = new Vector2(0f, 1f);
-        rt.anchorMax = new Vector2(1f, 1f);
-        rt.pivot = new Vector2(0.5f, 1f);
-        rt.anchoredPosition = new Vector2(0f, -8f - index * 78f);
-        rt.sizeDelta = new Vector2(0f, 70f);
+        var le = go.AddComponent<LayoutElement>();
+        le.minHeight = 70f;
+        le.preferredHeight = 70f;
 
         var img = go.AddComponent<Image>();
         if (rankRowBackground != null)
@@ -150,8 +216,8 @@ public class HinpyokaiUI : MonoBehaviour
         var e = entries[selected];
         var koiName = e.koi != null ? e.koi.name : "鯉";
         SetText("DetailPanel", "RankLabel", (selected + 1) + "位");
-        SetText("DetailPanel", "NameLabel", e.owner + "さんの鯉");
-        SetText("DetailPanel", "BreedLabel", "品種：" + koiName);
+        SetText("DetailPanel", "NameLabel", koiName);
+        SetText("DetailPanel", "BreedLabel", "品種");
         SetText("DetailPanel", "TotalLabel", e.score.total + "点");
         SetText("DetailPanel", "GlossLabel", "艶  " + e.score.gloss + "点");
         SetText("DetailPanel", "PatternLabel", "模様  " + e.score.pattern + "点");

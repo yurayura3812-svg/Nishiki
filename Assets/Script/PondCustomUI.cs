@@ -186,7 +186,7 @@ public class PondCustomUI : MonoBehaviour
         var photoGo = new GameObject("Tex", typeof(RectTransform));
         var photoRt = photoGo.GetComponent<RectTransform>();
         photoRt.SetParent(rt, false);
-        photoRt.anchorMin = new Vector2(0.06f, 0.26f);
+        photoRt.anchorMin = new Vector2(0.06f, 0.08f);
         photoRt.anchorMax = new Vector2(0.94f, 0.96f);
         photoRt.offsetMin = Vector2.zero;
         photoRt.offsetMax = Vector2.zero;
@@ -197,13 +197,6 @@ public class PondCustomUI : MonoBehaviour
         var check = CheckBadge(rt);
         check.SetActive(on);
         floorChecks[opt.id] = check;
-
-        var detail = PillButton(rt, "詳細", () => ShowFloorDetail(opt));
-        var dRt = detail.GetComponent<RectTransform>();
-        dRt.anchorMin = new Vector2(0.32f, 0.04f);
-        dRt.anchorMax = new Vector2(0.68f, 0.22f);
-        dRt.offsetMin = Vector2.zero;
-        dRt.offsetMax = Vector2.zero;
     }
 
     void ToggleKoi(string key)
@@ -294,33 +287,7 @@ public class PondCustomUI : MonoBehaviour
 
     void ShowDetail(KoiPatternData koi)
     {
-        if (detailTitle != null)
-            detailTitle.text = koi != null ? koi.name : "";
-        if (detailPhoto != null)
-        {
-            if (koi != null && koi.photoTexture != null)
-            {
-                detailPhoto.texture = koi.photoTexture;
-                detailPhoto.color = Color.white;
-            }
-            else
-            {
-                detailPhoto.texture = Texture2D.whiteTexture;
-                detailPhoto.color = koi != null ? koi.mainColor : Color.white;
-            }
-        }
-        if (detailOverlay != null) detailOverlay.SetActive(true);
-    }
-
-    void ShowFloorDetail(PondFloorOption opt)
-    {
-        if (detailTitle != null) detailTitle.text = opt.displayName;
-        if (detailPhoto != null)
-        {
-            detailPhoto.texture = opt.texture != null ? opt.texture : Texture2D.whiteTexture;
-            detailPhoto.color = Color.white;
-        }
-        if (detailOverlay != null) detailOverlay.SetActive(true);
+        KoiDetailGate.Open(koi, false, "ShopScene");
     }
 
     GameObject CheckBadge(RectTransform parent)

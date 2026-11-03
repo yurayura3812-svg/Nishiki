@@ -589,8 +589,8 @@ MonoBehaviour:
   rippleMaterial: {fileID: 2100000, guid: 9cdbf643f78469745b511e0a05b5fb06, type: 2}
   waterMaterial: {fileID: 2100000, guid: e5bfac1ae567100448c54c3d5a37f88b, type: 2}
   clickToSplash: 1
-  clickStrength: 1
-  clickRadiusUV: 0.04
+  clickStrength: 0.3
+  clickRadiusUV: 0.01
   waterY: 1.25
 --- !u!4 &789315147
 Transform:

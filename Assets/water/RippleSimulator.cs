@@ -131,7 +131,43 @@ namespace KoiPond
             int steps = Mathf.Clamp(Mathf.FloorToInt(_accum / dt), 0, 4);
             _accum -= steps * dt;
 
-            if (clickToSplash) TrySplashFromPointer();
+            // デバッグ用クリック (新旧両方の Input System に対応)
+            if (clickToSplash)
+            {
+                bool clicked = false;
+                Vector2 mousePos = Vector2.zero;
+
+                #if ENABLE_INPUT_SYSTEM
+                if (UnityEngine.InputSystem.Mouse.current != null)
+                {
+                    clicked = UnityEngine.InputSystem.Mouse.current.leftButton.wasPressedThisFrame;
+                    mousePos = UnityEngine.InputSystem.Mouse.current.position.ReadValue();
+                }
+                #endif
+
+                #if ENABLE_LEGACY_INPUT_MANAGER
+                // 旧 Input Manager がアクティブな場合のみ呼ぶ
+                if (!clicked)
+                {
+                    clicked = Input.GetMouseButtonDown(0);
+                    mousePos = Input.mousePosition;
+                }
+                #endif
+
+                if (clicked)
+                {
+                    Camera cam = Camera.main;
+                    if (cam != null)
+                    {
+                        Ray r = cam.ScreenPointToRay(new Vector3(mousePos.x, mousePos.y, 0));
+                        Plane plane = new Plane(Vector3.up, new Vector3(0, waterY, 0));
+                        if (plane.Raycast(r, out float enter))
+                        {
+                            AddImpulseWorld(r.GetPoint(enter), areaSize * clickRadiusUV, clickStrength);
+                        }
+                    }
+                }
+            }
 
             for (int i = 0; i < steps; i++)
             {
@@ -140,60 +176,6 @@ namespace KoiPond
 
             // 水シェーダーに最新の表面状態を渡す
             waterMaterial.SetTexture(ID_RippleTex, _readFromA ? _rtA : _rtB);
-        }
-
-        void TrySplashFromPointer()
-        {
-            bool clicked = false;
-            Vector2 screenPos = Vector2.zero;
-
-#if ENABLE_INPUT_SYSTEM
-            var pointer = UnityEngine.InputSystem.Pointer.current;
-            if (pointer != null && pointer.press.wasPressedThisFrame)
-            {
-                clicked = true;
-                screenPos = pointer.position.ReadValue();
-            }
-
-            var touch = UnityEngine.InputSystem.Touchscreen.current;
-            if (!clicked && touch != null)
-            {
-                var primary = touch.primaryTouch;
-                if (primary.press.wasPressedThisFrame)
-                {
-                    clicked = true;
-                    screenPos = primary.position.ReadValue();
-                }
-            }
-#endif
-
-#if ENABLE_LEGACY_INPUT_MANAGER
-            if (!clicked)
-            {
-                clicked = Input.GetMouseButtonDown(0);
-                screenPos = Input.mousePosition;
-            }
-#endif
-
-            if (!clicked) return;
-
-            Camera cam = Camera.main;
-            if (cam == null) return;
-
-            Ray r = cam.ScreenPointToRay(new Vector3(screenPos.x, screenPos.y, 0));
-            Vector3 hit;
-            if (Physics.Raycast(r, out var col, 200f))
-                hit = col.point;
-            else
-            {
-                Plane plane = new Plane(Vector3.up, new Vector3(0f, waterY, 0f));
-                if (!plane.Raycast(r, out float enter)) return;
-                hit = r.GetPoint(enter);
-            }
-
-            float worldRadius = Mathf.Max(0.35f, areaSize * Mathf.Max(clickRadiusUV, 0.03f));
-            float strength = Mathf.Max(clickStrength, 0.8f);
-            AddImpulseWorld(new Vector3(hit.x, waterY, hit.z), worldRadius, strength);
         }
 
         void StepOnce()

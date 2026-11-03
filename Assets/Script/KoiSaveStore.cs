@@ -198,9 +198,23 @@ public static class KoiSaveStore
     static List<KoiPatternData> LoadBuiltIn()
     {
         var list = new List<KoiPatternData>();
+        var catalog = Resources.Load<BuiltinKoiCatalog>("BuiltinKoiCatalog");
+        if (catalog != null && catalog.koi != null)
+        {
+            foreach (var data in catalog.koi)
+            {
+                if (data != null) list.Add(data);
+            }
+        }
+
         var fromResources = Resources.LoadAll<KoiPatternData>("KoiData");
-        if (fromResources != null && fromResources.Length > 0)
-            list.AddRange(fromResources);
+        if (fromResources != null)
+        {
+            foreach (var data in fromResources)
+            {
+                if (data != null) list.Add(data);
+            }
+        }
 
 #if UNITY_EDITOR
         const string folderPath = "Assets/KoiData";

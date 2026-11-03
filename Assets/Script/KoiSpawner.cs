@@ -23,7 +23,7 @@ public class KoiSpawner : MonoBehaviour
 
     void LoadAllPatternAssets()
     {
-        dataList = KoiSaveStore.LoadAll();
+        dataList = PondCustomStore.FilterSwimming(KoiSaveStore.LoadAll());
         Debug.Log($"<color=cyan>KoiSpawner:</color> {dataList.Count}体の鯉データを読み込みました。");
     }
 

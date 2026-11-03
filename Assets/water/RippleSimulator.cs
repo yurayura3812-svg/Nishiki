@@ -143,6 +143,24 @@ namespace KoiPond
                     clicked = UnityEngine.InputSystem.Mouse.current.leftButton.wasPressedThisFrame;
                     mousePos = UnityEngine.InputSystem.Mouse.current.position.ReadValue();
                 }
+
+                // Player では Mouse が無い。タッチ開始を同じ平面レイに載せる。
+                if (!clicked)
+                {
+                    var pad = UnityEngine.InputSystem.Touchscreen.current;
+                    if (pad != null)
+                    {
+                        var touches = pad.touches;
+                        for (int i = 0; i < touches.Count; i++)
+                        {
+                            var t = touches[i];
+                            if (!t.press.wasPressedThisFrame) continue;
+                            clicked = true;
+                            mousePos = t.position.ReadValue();
+                            break;
+                        }
+                    }
+                }
                 #endif
 
                 #if ENABLE_LEGACY_INPUT_MANAGER

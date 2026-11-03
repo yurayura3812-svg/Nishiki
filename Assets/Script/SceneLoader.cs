@@ -32,6 +32,9 @@ public class SceneLoader : MonoBehaviour
             return;
         }
 
+        if (sceneName != KoiDetailGate.SceneName)
+            KoiDetailGate.EnterJudging = false;
+
         SceneManager.LoadScene(sceneName);
     }
 }

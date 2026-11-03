@@ -7,6 +7,7 @@ public class SelectManager : MonoBehaviour
     public GameObject crossPanel;
     public GameObject selectPanel;
     public GameObject editorPanel;
+    public GameObject listPanel;
 
     [Header("--- メニューボタン本体 (押し分け用) ---")]
     public Button btnCreate; // Buttonコンポーネントをアタッチ
@@ -28,7 +29,16 @@ public class SelectManager : MonoBehaviour
 
     void Start()
     {
-        OnClickCrossButton();
+        if (listPanel != null) ShowList();
+        else OnClickCrossButton();
+    }
+
+    public void ShowList()
+    {
+        SetAllPanelsInactive();
+        if (listPanel != null) listPanel.SetActive(true);
+        if (nishikiModel != null) nishikiModel.SetActive(false);
+        if (breedingManager != null) breedingManager.SetStudioModelsVisible(false);
     }
 
     // ==========================================
@@ -71,8 +81,9 @@ public class SelectManager : MonoBehaviour
         SetAllPanelsInactive();
         UpdateButtonStates(btnCross); // 交配ボタンを無効化
 
-        crossPanel.SetActive(true);
+        if (crossPanel != null) crossPanel.SetActive(true);
         if (nishikiModel != null) nishikiModel.SetActive(false);
+        if (breedingManager != null) breedingManager.SetStudioModelsVisible(true);
     }
 
     public void OnClickNewCreateButton()
@@ -80,9 +91,9 @@ public class SelectManager : MonoBehaviour
         SetAllPanelsInactive();
         UpdateButtonStates(btnCreate); // 詳細作成ボタンを無効化
 
-        editorPanel.SetActive(true);
-        rotationArea.SetActive(true);
-        rotationResetButton.SetActive(true);
+        if (editorPanel != null) editorPanel.SetActive(true);
+        if (rotationArea != null) rotationArea.SetActive(true);
+        if (rotationResetButton != null) rotationResetButton.SetActive(true);
         if (nishikiModel != null) nishikiModel.SetActive(true);
 
         if (editorManager != null) editorManager.ResetToNew();
@@ -93,17 +104,19 @@ public class SelectManager : MonoBehaviour
         SetAllPanelsInactive();
         UpdateButtonStates(btnEdit); // 編集ボタンを無効化
 
-        selectPanel.SetActive(true);
+        if (selectPanel != null) selectPanel.SetActive(true);
         if (breedingManager != null) breedingManager.OpenForEditMode();
     }
 
     private void SetAllPanelsInactive()
     {
-        crossPanel.SetActive(false);
-        selectPanel.SetActive(false);
-        editorPanel.SetActive(false);
-        rotationArea.SetActive(false);
-        rotationResetButton.SetActive(false);
+        if (crossPanel != null) crossPanel.SetActive(false);
+        if (selectPanel != null) selectPanel.SetActive(false);
+        if (editorPanel != null) editorPanel.SetActive(false);
+        if (listPanel != null) listPanel.SetActive(false);
+        if (rotationArea != null) rotationArea.SetActive(false);
+        if (rotationResetButton != null) rotationResetButton.SetActive(false);
+        if (nishikiModel != null) nishikiModel.SetActive(false);
     }
 
     public void OnClickEditorButton()

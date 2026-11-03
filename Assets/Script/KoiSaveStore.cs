@@ -28,6 +28,7 @@ public class KoiSaveRecord
 public class KoiSaveFile
 {
     public List<KoiSaveRecord> koi = new List<KoiSaveRecord>();
+    public List<string> deletedKeys = new List<string>();
 }
 
 /// <summary>
@@ -40,21 +41,29 @@ public static class KoiSaveStore
     static string JsonPath => Path.Combine(Dir, "koi.json");
     static string PhotoDir => Path.Combine(Dir, "photos");
 
+    public static event Action<KoiPatternData> OnDeleted;
+
     public static List<KoiPatternData> LoadAll()
     {
         var result = new List<KoiPatternData>();
         var seen = new HashSet<string>();
 
+        var deleted = DeletedSet();
+
         foreach (var data in LoadBuiltIn())
         {
             if (data == null) continue;
-            if (seen.Add(KeyOf(data))) result.Add(data);
+            var key = KeyOf(data);
+            if (deleted.Contains(key)) continue;
+            if (seen.Add(key)) result.Add(data);
         }
 
         foreach (var data in LoadSaved())
         {
             if (data == null) continue;
-            if (seen.Add(KeyOf(data))) result.Add(data);
+            var key = KeyOf(data);
+            if (deleted.Contains(key)) continue;
+            if (seen.Add(key)) result.Add(data);
         }
 
         return result;
@@ -95,10 +104,80 @@ public static class KoiSaveStore
         Debug.Log($"<color=cyan>KoiSaveStore:</color> {data.name} を保存しました ({JsonPath})");
     }
 
-    static string KeyOf(KoiPatternData data)
+    public static string KeyOf(KoiPatternData data)
     {
+        if (data == null) return "";
         if (!string.IsNullOrEmpty(data.koiId)) return "id:" + data.koiId;
         return "name:" + data.name;
+    }
+
+    public static void Delete(KoiPatternData data)
+    {
+        if (data == null) return;
+        var key = KeyOf(data);
+        var file = ReadFile();
+        if (file.deletedKeys == null) file.deletedKeys = new List<string>();
+        if (!string.IsNullOrEmpty(key) && !file.deletedKeys.Contains(key))
+            file.deletedKeys.Add(key);
+
+        file.koi.RemoveAll(k =>
+            k != null && (
+                KeyOfSaved(k) == key
+                || (!string.IsNullOrEmpty(data.koiId) && k.koiId == data.koiId)
+                || k.displayName == data.name));
+
+        Directory.CreateDirectory(Dir);
+        File.WriteAllText(JsonPath, JsonUtility.ToJson(file, true));
+
+        TryDeletePhoto(data.koiId);
+        PondCustomStore.RemoveSwimming(data);
+        HinpyokaiEntryStore.Remove(key);
+        if (KoiDetailGate.EnteredKoiKey == key) KoiDetailGate.EnteredKoiKey = null;
+        OnDeleted?.Invoke(data);
+        Debug.Log($"<color=cyan>KoiSaveStore:</color> {data.name} を削除しました");
+    }
+
+    static HashSet<string> DeletedSet()
+    {
+        var file = ReadFile();
+        var set = new HashSet<string>();
+        if (file.deletedKeys == null) return set;
+        foreach (var k in file.deletedKeys)
+        {
+            if (!string.IsNullOrEmpty(k)) set.Add(k);
+        }
+        return set;
+    }
+
+    static string KeyOfSaved(KoiSaveRecord rec)
+    {
+        if (rec == null) return "";
+        if (!string.IsNullOrEmpty(rec.koiId)) return "id:" + rec.koiId;
+        return "name:" + rec.displayName;
+    }
+
+    static void TryDeletePhoto(string koiId)
+    {
+        if (string.IsNullOrEmpty(koiId)) return;
+        try
+        {
+            var path = Path.Combine(PhotoDir, koiId + ".png");
+            if (File.Exists(path)) File.Delete(path);
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning("KoiSaveStore: 写真を消せませんでした: " + e.Message);
+        }
+    }
+
+    public static KoiPatternData Find(string key)
+    {
+        if (string.IsNullOrEmpty(key)) return null;
+        foreach (var koi in LoadAll())
+        {
+            if (koi != null && KeyOf(koi) == key) return koi;
+        }
+        return null;
     }
 
     static KoiSaveFile ReadFile()
@@ -107,7 +186,9 @@ public static class KoiSaveStore
         try
         {
             var file = JsonUtility.FromJson<KoiSaveFile>(File.ReadAllText(JsonPath));
-            if (file == null || file.koi == null) return new KoiSaveFile();
+            if (file == null) return new KoiSaveFile();
+            if (file.koi == null) file.koi = new List<KoiSaveRecord>();
+            if (file.deletedKeys == null) file.deletedKeys = new List<string>();
             return file;
         }
         catch (Exception e)
@@ -120,9 +201,24 @@ public static class KoiSaveStore
     static List<KoiPatternData> LoadBuiltIn()
     {
         var list = new List<KoiPatternData>();
+        var catalog = Resources.Load<BuiltinKoiCatalog>("BuiltinKoiCatalog");
+        if (catalog != null && catalog.koi != null)
+        {
+            foreach (var data in catalog.koi)
+            {
+                if (data == null || catalog.IsHidden(data)) continue;
+                list.Add(data);
+            }
+        }
+
         var fromResources = Resources.LoadAll<KoiPatternData>("KoiData");
-        if (fromResources != null && fromResources.Length > 0)
-            list.AddRange(fromResources);
+        if (fromResources != null)
+        {
+            foreach (var data in fromResources)
+            {
+                if (data != null) list.Add(data);
+            }
+        }
 
 #if UNITY_EDITOR
         const string folderPath = "Assets/KoiData";
@@ -133,7 +229,9 @@ public static class KoiSaveStore
             {
                 string path = UnityEditor.AssetDatabase.GUIDToAssetPath(guid);
                 var data = UnityEditor.AssetDatabase.LoadAssetAtPath<KoiPatternData>(path);
-                if (data != null) list.Add(data);
+                if (data == null) continue;
+                if (catalog != null && catalog.IsHidden(data)) continue;
+                list.Add(data);
             }
         }
 #endif

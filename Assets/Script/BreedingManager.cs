@@ -108,10 +108,14 @@ public class BreedingUIManager : MonoBehaviour
         if (parent2RawImage != null) { parent2RawImage.texture = null; parent2RawImage.color = emptyColor; }
         if (childRawImage != null) { childRawImage.texture = null; childRawImage.color = emptyColor; }
 
-        // ★地下の3Dモデルをお休みさせる（非表示）
-        if (parent1KoiModel != null) parent1KoiModel.gameObject.SetActive(false);
-        if (parent2KoiModel != null) parent2KoiModel.gameObject.SetActive(false);
-        if (childKoiModel != null) childKoiModel.gameObject.SetActive(false);
+        SetStudioModelsVisible(false);
+    }
+
+    public void SetStudioModelsVisible(bool on)
+    {
+        if (parent1KoiModel != null) parent1KoiModel.gameObject.SetActive(on && parent1Data != null);
+        if (parent2KoiModel != null) parent2KoiModel.gameObject.SetActive(on && parent2Data != null);
+        if (childKoiModel != null) childKoiModel.gameObject.SetActive(on && childData != null);
     }
 
     // ==========================================

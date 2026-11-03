@@ -41,6 +41,8 @@ public static class KoiSaveStore
     static string JsonPath => Path.Combine(Dir, "koi.json");
     static string PhotoDir => Path.Combine(Dir, "photos");
 
+    public static event Action<KoiPatternData> OnDeleted;
+
     public static List<KoiPatternData> LoadAll()
     {
         var result = new List<KoiPatternData>();
@@ -131,6 +133,7 @@ public static class KoiSaveStore
         PondCustomStore.RemoveSwimming(data);
         HinpyokaiEntryStore.Remove(key);
         if (KoiDetailGate.EnteredKoiKey == key) KoiDetailGate.EnteredKoiKey = null;
+        OnDeleted?.Invoke(data);
         Debug.Log($"<color=cyan>KoiSaveStore:</color> {data.name} を削除しました");
     }
 
@@ -203,7 +206,8 @@ public static class KoiSaveStore
         {
             foreach (var data in catalog.koi)
             {
-                if (data != null) list.Add(data);
+                if (data == null || catalog.IsHidden(data)) continue;
+                list.Add(data);
             }
         }
 
@@ -225,7 +229,9 @@ public static class KoiSaveStore
             {
                 string path = UnityEditor.AssetDatabase.GUIDToAssetPath(guid);
                 var data = UnityEditor.AssetDatabase.LoadAssetAtPath<KoiPatternData>(path);
-                if (data != null) list.Add(data);
+                if (data == null) continue;
+                if (catalog != null && catalog.IsHidden(data)) continue;
+                list.Add(data);
             }
         }
 #endif

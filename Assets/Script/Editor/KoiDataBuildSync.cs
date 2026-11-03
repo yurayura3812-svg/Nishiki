@@ -23,6 +23,8 @@ public class KoiDataBuildSync : AssetPostprocessor, IPreprocessBuildWithReport
     [InitializeOnLoadMethod]
     static void EnsureCatalog()
     {
+        KoiSaveStore.OnDeleted -= HideBuiltIn;
+        KoiSaveStore.OnDeleted += HideBuiltIn;
         EditorApplication.delayCall += () => Sync(false);
     }
 
@@ -72,7 +74,8 @@ public class KoiDataBuildSync : AssetPostprocessor, IPreprocessBuildWithReport
         {
             var path = AssetDatabase.GUIDToAssetPath(guid);
             var data = AssetDatabase.LoadAssetAtPath<KoiPatternData>(path);
-            if (data != null) found.Add(data);
+            if (data == null || catalog.IsHidden(data)) continue;
+            found.Add(data);
         }
 
         found.Sort((a, b) => string.CompareOrdinal(a.name, b.name));
@@ -100,5 +103,39 @@ public class KoiDataBuildSync : AssetPostprocessor, IPreprocessBuildWithReport
         EditorUtility.SetDirty(catalog);
         AssetDatabase.SaveAssets();
         if (log) Debug.Log("BuiltinKoiCatalog: " + found.Count + " 体をビルド用に載せました。");
+    }
+
+    public static void HideBuiltIn(KoiPatternData data)
+    {
+        if (data == null) return;
+        var catalog = AssetDatabase.LoadAssetAtPath<BuiltinKoiCatalog>(CatalogPath);
+        if (catalog == null) return;
+
+        var hidden = catalog.hiddenKeys != null
+            ? new List<string>(catalog.hiddenKeys)
+            : new List<string>();
+        void Add(string key)
+        {
+            if (!string.IsNullOrEmpty(key) && !hidden.Contains(key)) hidden.Add(key);
+        }
+        Add(KoiSaveStore.KeyOf(data));
+        Add("name:" + data.name);
+
+        var kept = new List<KoiPatternData>();
+        if (catalog.koi != null)
+        {
+            foreach (var k in catalog.koi)
+            {
+                if (k == null || catalog.IsHidden(k) || k == data) continue;
+                if (KoiSaveStore.KeyOf(k) == KoiSaveStore.KeyOf(data)) continue;
+                if (k.name == data.name) continue;
+                kept.Add(k);
+            }
+        }
+
+        catalog.hiddenKeys = hidden.ToArray();
+        catalog.koi = kept.ToArray();
+        EditorUtility.SetDirty(catalog);
+        AssetDatabase.SaveAssets();
     }
 }

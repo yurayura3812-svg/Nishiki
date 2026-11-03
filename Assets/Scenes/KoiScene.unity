@@ -2864,7 +2864,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &530010041
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2880,9 +2880,9 @@ RectTransform:
   - {fileID: 530010046}
   m_Father: {fileID: 1043737619}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 50, y: -285.00006}
   m_SizeDelta: {x: 218.39996, y: 98}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &530010042
@@ -3064,7 +3064,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &530010051
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3080,9 +3080,9 @@ RectTransform:
   - {fileID: 530010056}
   m_Father: {fileID: 1043737619}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 50, y: -285.00006}
   m_SizeDelta: {x: 218.39996, y: 98}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &530010052
@@ -9534,19 +9534,19 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 3dfc5d92ee6e9b14bb7f91131c9caa95, type: 3}
       propertyPath: m_LocalScale.x
-      value: 1.6800001
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 3dfc5d92ee6e9b14bb7f91131c9caa95, type: 3}
       propertyPath: m_LocalScale.y
-      value: 1.6800001
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 3dfc5d92ee6e9b14bb7f91131c9caa95, type: 3}
       propertyPath: m_LocalScale.z
-      value: 1.2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 3dfc5d92ee6e9b14bb7f91131c9caa95, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.4
+      value: -0.2
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 3dfc5d92ee6e9b14bb7f91131c9caa95, type: 3}
       propertyPath: m_LocalPosition.y
@@ -9586,7 +9586,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 3dfc5d92ee6e9b14bb7f91131c9caa95, type: 3}
       propertyPath: m_ConstrainProportionsScale
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -6997733842791713512, guid: 3dfc5d92ee6e9b14bb7f91131c9caa95, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'

@@ -10,6 +10,8 @@ public class SceneLoader : MonoBehaviour
     [SerializeField] private Object sceneAsset;
     [SerializeField] private string sceneName;
 
+    public string SceneName => sceneName;
+
 #if UNITY_EDITOR
     void OnValidate()
     {

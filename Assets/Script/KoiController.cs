@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class KoiController : MonoBehaviour
 {
@@ -9,13 +10,12 @@ public class KoiController : MonoBehaviour
 
     public void ApplyDNA()
     {
-        if (patternData == null) return;
-
-        Renderer[] allRenderers = GetComponentsInChildren<Renderer>();
-        if (allRenderers.Length == 0) return;
-
-        foreach (Renderer r in allRenderers)
+        foreach (var r in GetComponentsInChildren<Renderer>())
         {
+            r.shadowCastingMode = ShadowCastingMode.Off;
+            r.receiveShadows = false;
+            if (patternData == null) continue;
+
             MaterialPropertyBlock mpb = new MaterialPropertyBlock();
             r.GetPropertyBlock(mpb);
 

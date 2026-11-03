@@ -148,9 +148,57 @@ public static class PondCustomStore
         if (tex != null)
         {
             mat.SetTexture("_BaseMap", tex);
-            mat.SetTexture("_DetailAlbedoMap", tex);
+            mat.SetTextureScale("_BaseMap", Vector2.one);
+            mat.SetTextureOffset("_BaseMap", Vector2.zero);
+            FitPlaneToTexture(renderer, tex);
         }
         mat.SetColor("_BaseColor", Color.white);
+    }
+
+    /// <summary>
+    /// 床画像の縦横比は保ったまま、カメラ視界を覆う大きさにする。
+    /// 幅だけ合わせると高さが足りず、奥の背景が見える。
+    /// </summary>
+    static void FitPlaneToTexture(Renderer renderer, Texture tex)
+    {
+        if (tex == null || tex.height <= 0) return;
+        var cam = Camera.main;
+        if (cam == null) return;
+
+        var plane = renderer.transform;
+        float meshX = 10f;
+        float meshZ = 10f;
+        var filter = renderer.GetComponent<MeshFilter>();
+        if (filter != null && filter.sharedMesh != null)
+        {
+            var size = filter.sharedMesh.bounds.size;
+            if (size.x > 0.001f) meshX = size.x;
+            if (size.z > 0.001f) meshZ = size.z;
+        }
+
+        float dist = Mathf.Max(0.01f, Mathf.Abs(cam.transform.position.y - plane.position.y));
+        float viewH = 2f * dist * Mathf.Tan(cam.fieldOfView * 0.5f * Mathf.Deg2Rad);
+        float viewW = viewH * cam.aspect;
+        float imageAspect = (float)tex.width / tex.height;
+        float viewAspect = viewW / viewH;
+
+        float worldW;
+        float worldH;
+        if (imageAspect > viewAspect)
+        {
+            worldH = viewH;
+            worldW = viewH * imageAspect;
+        }
+        else
+        {
+            worldW = viewW;
+            worldH = viewW / imageAspect;
+        }
+
+        const float margin = 1.08f;
+        worldW *= margin;
+        worldH *= margin;
+        plane.localScale = new Vector3(worldW / meshX, plane.localScale.y, worldH / meshZ);
     }
 
     static PondFloorOption[] LoadFloors()

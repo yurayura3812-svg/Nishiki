@@ -7,19 +7,22 @@ using UnityEditor;
 
 public class SceneLoader : MonoBehaviour
 {
-    [SerializeField] private Object sceneAsset; // シーンをドラッグ
+    [SerializeField] private Object sceneAsset;
+    [SerializeField] private string sceneName;
 
-    private string sceneName;
+#if UNITY_EDITOR
+    void OnValidate()
+    {
+        if (sceneAsset != null)
+            sceneName = sceneAsset.name;
+    }
 
     void Awake()
     {
-#if UNITY_EDITOR
         if (sceneAsset != null)
-        {
             sceneName = sceneAsset.name;
-        }
-#endif
     }
+#endif
 
     public void LoadScene()
     {

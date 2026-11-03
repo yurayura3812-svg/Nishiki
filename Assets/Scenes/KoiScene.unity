@@ -4138,6 +4138,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SceneLoader
   sceneAsset: {fileID: 102900000, guid: 70f2a5c84a19f434690a7108c1c843f6, type: 3}
+  sceneName: HinpyokaiScene
 --- !u!114 &879661261
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8129,6 +8130,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SceneLoader
   sceneAsset: {fileID: 102900000, guid: 99c9720ab356a0642a771bea13969a05, type: 3}
+  sceneName: IkeScene
 --- !u!114 &1348797510
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8384,6 +8386,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SceneLoader
   sceneAsset: {fileID: 102900000, guid: 8fbe8fbcbb5bd98498db10bffe9f5691, type: 3}
+  sceneName: KoiScene
 --- !u!114 &1416123319
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11538,6 +11541,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SceneLoader
   sceneAsset: {fileID: 102900000, guid: 70f2a5c84a19f434690a7108c1c843f6, type: 3}
+  sceneName: HinpyokaiScene
 --- !u!114 &2078314767
 MonoBehaviour:
   m_ObjectHideFlags: 0

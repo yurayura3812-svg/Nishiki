@@ -47,6 +47,19 @@ namespace KoiPond
         struct Impulse { public Vector2 uv; public float radiusUV; public float strength; }
         readonly List<Impulse> _pendingImpulses = new List<Impulse>(16);
 
+        struct WaveHit
+        {
+            public Vector2 xz;
+            public float t0;
+            public float strength;
+            public float radius;
+        }
+
+        const int WaveCap = 48;
+        readonly WaveHit[] _waveHits = new WaveHit[WaveCap];
+        int _waveCount;
+        int _waveIndex;
+
         // Material property IDs
         static readonly int ID_RippleTex          = Shader.PropertyToID("_RippleTex");
         static readonly int ID_RippleAreaCenter   = Shader.PropertyToID("_RippleAreaCenter");
@@ -117,6 +130,38 @@ namespace KoiPond
 
             float radiusUV = Mathf.Max(0.001f, worldRadius / areaSize);
             _pendingImpulses.Add(new Impulse { uv = new Vector2(u, v), radiusUV = radiusUV, strength = strength });
+
+            _waveHits[_waveIndex] = new WaveHit
+            {
+                xz = new Vector2(worldPos.x, worldPos.z),
+                t0 = Time.time,
+                strength = strength,
+                radius = worldRadius
+            };
+            _waveIndex = (_waveIndex + 1) % WaveCap;
+            if (_waveCount < WaveCap) _waveCount++;
+        }
+
+        /// <summary>
+        /// 蓮の葉などが水面の高さを合わせる用。GPU の高さ場ではなく、同じインパルスから環状の波を近似する。
+        /// </summary>
+        public float SampleRippleHeight(Vector3 worldPos)
+        {
+            float h = 0f;
+            float now = Time.time;
+            var p = new Vector2(worldPos.x, worldPos.z);
+            for (int i = 0; i < _waveCount; i++)
+            {
+                var w = _waveHits[i];
+                float age = now - w.t0;
+                if (age < 0f || age > 2.2f) continue;
+                float d = Vector2.Distance(p, w.xz);
+                float ring = d - age * 2.2f;
+                float sigma = Mathf.Max(0.08f, w.radius + age * 0.15f);
+                float envelope = Mathf.Exp(-age * 1.8f);
+                h += w.strength * envelope * Mathf.Exp(-(ring * ring) / (2f * sigma * sigma));
+            }
+            return h;
         }
 
         void Update()

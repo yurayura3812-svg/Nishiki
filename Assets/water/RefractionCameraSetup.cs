@@ -138,7 +138,8 @@ namespace KoiPond
             _refractionCam.nearClipPlane     = _mainCam.nearClipPlane;
             _refractionCam.farClipPlane      = _mainCam.farClipPlane;
             _refractionCam.orthographic      = _mainCam.orthographic;
-            _refractionCam.cullingMask       = _mainCam.cullingMask & ~excludeFromRefraction.value;
+            // LotusFloat(6) は蓮の葉。水面に写すと実物と二重になる。
+            _refractionCam.cullingMask = _mainCam.cullingMask & ~excludeFromRefraction.value & ~(1 << 6);
 
             // Aspect ratio を明示的に同期 (Play 切り替え時にメインカメラの aspect が変わって
             //  屈折カメラと食い違うと、画面の片側だけ屈折が破綻するため)
@@ -156,9 +157,14 @@ namespace KoiPond
                 _refractionCam.fieldOfView = Mathf.Atan(halfTan) * 2f * Mathf.Rad2Deg;
             }
 
+            var floats = FindObjectsByType<LotusLeafSpawner>(FindObjectsSortMode.None);
+            for (int i = 0; i < floats.Length; i++) floats[i].SetVisible(false);
+
             // ---- 撮影 ----
             _refractionCam.targetTexture = _rt;
             _refractionCam.Render();
+
+            for (int i = 0; i < floats.Length; i++) floats[i].SetVisible(true);
 
             // ---- グローバル Shader プロパティとマテリアルにセット ----
             // メインカメラの視野中心が RT のどこに来るかを示すパラメータも一緒に渡す。

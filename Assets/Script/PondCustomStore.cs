@@ -10,6 +10,7 @@ public class PondCustomSave
     public List<string> swimmingKoiIds = new List<string>();
     public bool koiSelectionSaved;
     public string floorId;
+    public string floatId;
 }
 
 [Serializable]
@@ -26,7 +27,10 @@ public class PondFloorOption
 /// </summary>
 public static class PondCustomStore
 {
+    public const string NoFloatId = "none";
+
     static PondFloorOption[] cachedFloors;
+    static PondFloatSet[] cachedFloats;
     static readonly Regex TrailingCopy = new Regex(@"\s+\(\d+\)$");
 
     static readonly Dictionary<string, string> LegacyKeys = new Dictionary<string, string>
@@ -38,6 +42,16 @@ public static class PondCustomStore
     };
 
     static string PathName => System.IO.Path.Combine(Application.persistentDataPath, "KoiSaves", "pond.json");
+
+    static PondCustomSave FreshSave()
+    {
+        return new PondCustomSave
+        {
+            swimmingKoiIds = new List<string>(),
+            floorId = DefaultFloorId,
+            floatId = "mone"
+        };
+    }
 
     public static PondFloorOption[] FloorOptions
     {
@@ -59,19 +73,20 @@ public static class PondCustomStore
 
     public static PondCustomSave Load()
     {
-        if (!File.Exists(PathName)) return new PondCustomSave();
+        if (!File.Exists(PathName)) return FreshSave();
         try
         {
             var save = JsonUtility.FromJson<PondCustomSave>(File.ReadAllText(PathName));
-            if (save == null) return new PondCustomSave();
+            if (save == null) return FreshSave();
             if (save.swimmingKoiIds == null) save.swimmingKoiIds = new List<string>();
             if (string.IsNullOrEmpty(save.floorId)) save.floorId = DefaultFloorId;
+            if (string.IsNullOrEmpty(save.floatId)) save.floatId = "mone";
             return save;
         }
         catch (Exception e)
         {
             Debug.LogWarning("PondCustomStore: 読めませんでした: " + e.Message);
-            return new PondCustomSave();
+            return FreshSave();
         }
     }
 
@@ -113,6 +128,25 @@ public static class PondCustomStore
             if (k != null && ids.Contains(KoiKey(k))) result.Add(k);
         }
         return result;
+    }
+
+    public static PondFloatSet[] FloatOptions
+    {
+        get
+        {
+            if (cachedFloats == null) cachedFloats = LoadFloats();
+            return cachedFloats;
+        }
+    }
+
+    public static PondFloatSet FindFloat(string id)
+    {
+        if (string.IsNullOrEmpty(id) || id == NoFloatId) return null;
+        foreach (var f in FloatOptions)
+        {
+            if (f != null && f.id == id) return f;
+        }
+        return null;
     }
 
     public static PondFloorOption FindFloor(string id)
@@ -235,6 +269,21 @@ public static class PondCustomStore
             }
         }
 
+        return list.ToArray();
+    }
+
+    static PondFloatSet[] LoadFloats()
+    {
+        var list = new List<PondFloatSet>();
+        var catalog = Resources.Load<PondFloatCatalog>("PondFloatCatalog");
+        if (catalog == null || catalog.entries == null) return list.ToArray();
+        foreach (var e in catalog.entries)
+        {
+            if (e == null || e.textures == null || e.textures.Length == 0) continue;
+            if (string.IsNullOrEmpty(e.id)) continue;
+            if (string.IsNullOrEmpty(e.displayName)) e.displayName = e.id;
+            list.Add(e);
+        }
         return list.ToArray();
     }
 }

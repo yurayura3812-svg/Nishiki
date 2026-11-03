@@ -29,3 +29,36 @@ MonoBehaviour:
   - id: "\u967D\u5149\u304D\u3089\u3081\u304F\u6C34\u5E95\u306E\u84EE\u6C60"
     displayName: "\u967D\u5149\u304D\u3089\u3081\u304F\u6C34\u5E95\u306E\u84EE\u6C60"
     texture: {fileID: 2800000, guid: cf84e343d4106af479fd31439bf2d6e1, type: 3}
+  - id: "\u82D4\u3080\u3059\u77F3\u5EAD\u306E\u9759\u3051\u3055"
+    displayName: "\u82D4\u3080\u3059\u77F3\u5EAD\u306E\u9759\u3051\u3055"
+    texture: {fileID: 2800000, guid: feb94ffc0606a2a43b57a0fa93f03a47, type: 3}
+  - id: "\u6E05\u6D41\u306B\u63FA\u3089\u3081\u304F\u82D4\u3080\u3059\u5DDD\u5E95"
+    displayName: "\u6E05\u6D41\u306B\u63FA\u3089\u3081\u304F\u82D4\u3080\u3059\u5DDD\u5E95"
+    texture: {fileID: 2800000, guid: 3b8cf2ea26aca4f43848c508f2bd99e7, type: 3}
+  - id: "\u79CB\u8272\u306E\u8449\u304C\u821E\u3046\u6E05\u6D41\u306E\u5DDD\u5E95"
+    displayName: "\u79CB\u8272\u306E\u8449\u304C\u821E\u3046\u6E05\u6D41\u306E\u5DDD\u5E95"
+    texture: {fileID: 2800000, guid: 8e4da1499c9e92e4a8aaf3181b110f67, type: 3}
+  - id: "\u82D4\u3080\u3059\u77F3\u3068\u5C0F\u3055\u306A\u68EE\u306E\u6D41\u308C"
+    displayName: "\u82D4\u3080\u3059\u77F3\u3068\u5C0F\u3055\u306A\u68EE\u306E\u6D41\u308C"
+    texture: {fileID: 2800000, guid: 8aec63891a2c3ec4b97c2f1b20590018, type: 3}
+  - id: "\u82D4\u3080\u3059\u79CB\u306E\u6E13\u6D41\u5CA9\u5E8A"
+    displayName: "\u82D4\u3080\u3059\u79CB\u306E\u6E13\u6D41\u5CA9\u5E8A"
+    texture: {fileID: 2800000, guid: 3879f88d3a4ac7745b6fe0029c8a434a, type: 3}
+  - id: "\u8679\u8272\u306B\u8F1D\u304F\u30AA\u30D1\u30FC\u30EB\u5C0F\u77F3\u306E\u6D77"
+    displayName: "\u8679\u8272\u306B\u8F1D\u304F\u30AA\u30D1\u30FC\u30EB\u5C0F\u77F3\u306E\u6D77"
+    texture: {fileID: 2800000, guid: 97409fa893b19e34ebe145b950329dd8, type: 3}
+  - id: "\u8679\u8272\u306B\u8F1D\u304F\u9ED2\u66DC\u77F3\u306E\u5DDD\u5E95"
+    displayName: "\u8679\u8272\u306B\u8F1D\u304F\u9ED2\u66DC\u77F3\u306E\u5DDD\u5E95"
+    texture: {fileID: 2800000, guid: eeff20768311796479081bc1d54b7167, type: 3}
+  - id: "\u685C\u306E\u82B1\u3073\u3089\u821E\u3046\u82D4\u3080\u3057\u305F\u77F3\u7573"
+    displayName: "\u685C\u306E\u82B1\u3073\u3089\u821E\u3046\u82D4\u3080\u3057\u305F\u77F3\u7573"
+    texture: {fileID: 2800000, guid: ed8aa8b27030c5040ba6b7dee61592f6, type: 3}
+  - id: "\u5922\u5E7B\u306E\u685C\u30DA\u30BF\u30EB\u714C\u3081\u304D\u5C64"
+    displayName: "\u5922\u5E7B\u306E\u685C\u30DA\u30BF\u30EB\u714C\u3081\u304D\u5C64"
+    texture: {fileID: 2800000, guid: ddac09555c9e27d44976296dffc6c462, type: 3}
+  - id: "\u7A4F\u3084\u304B\u306A\u7802\u7D0B\u3068\u6563\u3089\u3070\u308B\u5C0F\u77F3"
+    displayName: "\u7A4F\u3084\u304B\u306A\u7802\u7D0B\u3068\u6563\u3089\u3070\u308B\u5C0F\u77F3"
+    texture: {fileID: 2800000, guid: 00109a0adfa64dd4f90db01f0761cee2, type: 3}
+  - id: "\u82D4\u3080\u3059\u5CA9\u3068\u9280\u674F\u306E\u8449"
+    displayName: "\u82D4\u3080\u3059\u5CA9\u3068\u9280\u674F\u306E\u8449"
+    texture: {fileID: 2800000, guid: 0450af77336e7b74197cdbe3efd7e50a, type: 3}

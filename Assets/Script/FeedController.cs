@@ -151,16 +151,8 @@ public class FeedController : MonoBehaviour
         {
             if (pelletMat == null)
             {
-                var sh = Shader.Find("Universal Render Pipeline/Unlit");
-                if (sh == null) sh = Shader.Find("Unlit/Color");
-                pelletMat = sh != null ? new Material(sh) : null;
-                if (pelletMat != null)
-                {
-                    if (pelletMat.HasProperty("_BaseColor"))
-                        pelletMat.SetColor("_BaseColor", Color.white);
-                    if (pelletMat.HasProperty("_Color"))
-                        pelletMat.SetColor("_Color", Color.white);
-                }
+                var src = Resources.Load<Material>("FeedPellet");
+                if (src != null) pelletMat = new Material(src);
             }
             if (pelletMat != null) rend.sharedMaterial = pelletMat;
             rend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;

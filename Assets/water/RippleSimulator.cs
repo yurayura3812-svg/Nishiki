@@ -147,7 +147,23 @@ namespace KoiPond
         /// </summary>
         public float SampleRippleHeight(Vector3 worldPos)
         {
-            float h = 0f;
+            SampleRipple(worldPos, out float h, out _);
+            return h;
+        }
+
+        /// <summary>
+        /// 波の輪が通るとき、中心から外へ押す力。浮いているものを少し流す用。
+        /// </summary>
+        public Vector2 SampleRipplePush(Vector3 worldPos)
+        {
+            SampleRipple(worldPos, out _, out var push);
+            return push;
+        }
+
+        void SampleRipple(Vector3 worldPos, out float height, out Vector2 push)
+        {
+            height = 0f;
+            push = Vector2.zero;
             float now = Time.time;
             var p = new Vector2(worldPos.x, worldPos.z);
             for (int i = 0; i < _waveCount; i++)
@@ -155,13 +171,17 @@ namespace KoiPond
                 var w = _waveHits[i];
                 float age = now - w.t0;
                 if (age < 0f || age > 2.2f) continue;
-                float d = Vector2.Distance(p, w.xz);
+                var delta = p - w.xz;
+                float d = delta.magnitude;
                 float ring = d - age * 2.2f;
                 float sigma = Mathf.Max(0.08f, w.radius + age * 0.15f);
                 float envelope = Mathf.Exp(-age * 1.8f);
-                h += w.strength * envelope * Mathf.Exp(-(ring * ring) / (2f * sigma * sigma));
+                float crest = Mathf.Exp(-(ring * ring) / (2f * sigma * sigma));
+                float amp = w.strength * envelope * crest;
+                height += amp;
+                if (d > 0.001f)
+                    push += (delta / d) * amp;
             }
-            return h;
         }
 
         void Update()

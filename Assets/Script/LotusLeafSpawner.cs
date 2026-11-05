@@ -21,6 +21,7 @@ public class LotusLeafSpawner : MonoBehaviour
     float[] yaw;
     float[] spin;
     float[] sizes;
+    Vector2[] vel;
     Material leafMat;
     float halfW = 1.5f;
     float halfH = 1.0f;
@@ -87,6 +88,7 @@ public class LotusLeafSpawner : MonoBehaviour
         yaw = new float[spawnCount];
         spin = new float[spawnCount];
         sizes = new float[spawnCount];
+        vel = new Vector2[spawnCount];
 
         for (int i = 0; i < spawnCount; i++)
         {
@@ -144,8 +146,11 @@ public class LotusLeafSpawner : MonoBehaviour
             drift.y += Mathf.Cos(t * 0.1f + i * 1.1f) * 0.005f;
 
             var p = rest[i];
-            p.x += drift.x * dt;
-            p.z += drift.y * dt;
+            var push = sim != null ? sim.SampleRipplePush(p) : Vector2.zero;
+            vel[i] += push * 2.4f * dt;
+            vel[i] *= Mathf.Exp(-1.6f * dt);
+            p.x += (drift.x + vel[i].x) * dt;
+            p.z += (drift.y + vel[i].y) * dt;
 
             float limX = halfW * 1.15f;
             float limZ = halfH * 1.15f;
@@ -164,7 +169,7 @@ public class LotusLeafSpawner : MonoBehaviour
             var wave = WaveOffset(p, waveT);
             var n = Vector3.Slerp(Vector3.up, SampleNormal(p, waveT, waterY), 0.08f);
             float y = waterY + wave.y * 0.35f + Ripple(p) + sizes[i] * 0.2f + 0.02f;
-            yaw[i] += (spin[i] * 0.08f + drift.x * 2f) * dt;
+            yaw[i] += (spin[i] * 0.08f + drift.x * 2f + vel[i].x * 8f) * dt;
             leaves[i].position = new Vector3(p.x + wave.x, y, p.z + wave.z);
             leaves[i].rotation = Quaternion.FromToRotation(Vector3.up, n) * Quaternion.Euler(-90f, yaw[i], 0f);
         }

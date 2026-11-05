@@ -77,6 +77,27 @@ public class BreedingUIManager : MonoBehaviour
 
         ResetUI();
         selectPanel.SetActive(false);
+        Loc.Changed += OnLoc;
+    }
+
+    void OnDestroy()
+    {
+        Loc.Changed -= OnLoc;
+    }
+
+    void OnLoc()
+    {
+        Loc.Apply(transform);
+        RefreshSelectMessage();
+    }
+
+    void RefreshSelectMessage()
+    {
+        if (selectMessage == null) return;
+        if (currentSelectingTarget == 0)
+            selectMessage.text = Loc.Get("breed.pick_edit");
+        else
+            selectMessage.text = Loc.Format("breed.pick_parent", currentSelectingTarget);
     }
 
     // ==========================================
@@ -124,7 +145,7 @@ public class BreedingUIManager : MonoBehaviour
     void OpenSelectPanel(int target)
     {
         currentSelectingTarget = target;
-        selectMessage.text = $"親{target} を選択してください。";
+        RefreshSelectMessage();
         tempSelectedData = null; 
         selectConfirmButton.interactable = false; 
 
@@ -276,7 +297,7 @@ public class BreedingUIManager : MonoBehaviour
     {
         // ターゲット0番を「編集用」としてリストを開く
         OpenSelectPanel(0);
-        if (selectMessage != null) selectMessage.text = "編集する錦鯉を選択してください。";
+        RefreshSelectMessage();
     }
 
     void SaveChildKoi()
@@ -285,7 +306,7 @@ public class BreedingUIManager : MonoBehaviour
 
         // 1. 入力された基本名を取得
         string baseName = nameInput.text;
-        if (string.IsNullOrEmpty(baseName)) baseName = "名無しの錦鯉";
+        if (string.IsNullOrEmpty(baseName)) baseName = Loc.Get("koi.unnamed");
 
         string finalName = KoiSaveStore.UniqueDisplayName(baseName);
         childData.name = finalName;

@@ -71,7 +71,7 @@ public static class KoiSaveStore
 
     public static string UniqueDisplayName(string baseName)
     {
-        if (string.IsNullOrEmpty(baseName)) baseName = "名無しの錦鯉";
+        if (string.IsNullOrEmpty(baseName)) baseName = Loc.Get("koi.unnamed");
         var names = new HashSet<string>();
         foreach (var k in LoadAll())
         {

@@ -38,6 +38,19 @@ public class HinpyokaiUI : MonoBehaviour
 
         WireJoin();
         Refresh();
+        Loc.Apply(transform);
+        Loc.Changed += OnLoc;
+    }
+
+    void OnDestroy()
+    {
+        Loc.Changed -= OnLoc;
+    }
+
+    void OnLoc()
+    {
+        Refresh();
+        Loc.Apply(transform);
     }
 
     public void Refresh()
@@ -90,7 +103,7 @@ public class HinpyokaiUI : MonoBehaviour
             entries.Add(new Entry
             {
                 koi = koi,
-                owner = string.IsNullOrEmpty(koi.name) ? "鯉" : koi.name,
+                owner = Loc.KoiName(koi.name),
                 score = HinpyokaiScore.From(koi)
             });
         }
@@ -193,8 +206,8 @@ public class HinpyokaiUI : MonoBehaviour
         int captured = index;
         btn.onClick.AddListener(() => ShowDetail(captured));
 
-        Label(rt, (index + 1) + "位  " + entry.owner, 28, TextAnchor.MiddleLeft, new Vector2(28, 0), new Vector2(-120, 0));
-        Label(rt, entry.score.total + "点", 28, TextAnchor.MiddleRight, new Vector2(0, 0), new Vector2(-28, 0));
+        Label(rt, Loc.Format("judging.rank_name", index + 1, entry.owner), 28, TextAnchor.MiddleLeft, new Vector2(28, 0), new Vector2(-120, 0));
+        Label(rt, Loc.Format("judging.pts", entry.score.total), 28, TextAnchor.MiddleRight, new Vector2(0, 0), new Vector2(-28, 0));
     }
 
     void ShowDetail(int index)
@@ -202,26 +215,26 @@ public class HinpyokaiUI : MonoBehaviour
         if (entries.Count == 0)
         {
             SetText("DetailPanel", "RankLabel", "");
-            SetText("DetailPanel", "NameLabel", "出す鯉がありません");
+            SetText("DetailPanel", "NameLabel", Loc.Get("judging.empty"));
             SetText("DetailPanel", "BreedLabel", "");
             SetText("DetailPanel", "TotalLabel", "");
-            SetText("DetailPanel", "GlossLabel", "艶");
-            SetText("DetailPanel", "PatternLabel", "模様");
-            SetText("DetailPanel", "BodyLabel", "体格");
+            SetText("DetailPanel", "GlossLabel", Loc.Get("judging.gloss"));
+            SetText("DetailPanel", "PatternLabel", Loc.Get("judging.pattern"));
+            SetText("DetailPanel", "BodyLabel", Loc.Get("judging.body"));
             SetPhoto(null, Color.white);
             return;
         }
 
         selected = Mathf.Clamp(index, 0, entries.Count - 1);
         var e = entries[selected];
-        var koiName = e.koi != null ? e.koi.name : "鯉";
-        SetText("DetailPanel", "RankLabel", (selected + 1) + "位");
+        var koiName = e.koi != null ? Loc.KoiName(e.koi.name) : Loc.Get("koi.fallback");
+        SetText("DetailPanel", "RankLabel", Loc.Format("judging.rank", selected + 1));
         SetText("DetailPanel", "NameLabel", koiName);
-        SetText("DetailPanel", "BreedLabel", "品種");
-        SetText("DetailPanel", "TotalLabel", e.score.total + "点");
-        SetText("DetailPanel", "GlossLabel", "艶  " + e.score.gloss + "点");
-        SetText("DetailPanel", "PatternLabel", "模様  " + e.score.pattern + "点");
-        SetText("DetailPanel", "BodyLabel", "体格  " + e.score.body + "点");
+        SetText("DetailPanel", "BreedLabel", Loc.Get("judging.breed"));
+        SetText("DetailPanel", "TotalLabel", Loc.Format("judging.pts", e.score.total));
+        SetText("DetailPanel", "GlossLabel", Loc.Format("judging.gloss_pts", e.score.gloss));
+        SetText("DetailPanel", "PatternLabel", Loc.Format("judging.pattern_pts", e.score.pattern));
+        SetText("DetailPanel", "BodyLabel", Loc.Format("judging.body_pts", e.score.body));
         if (e.koi != null && e.koi.photoTexture != null)
             SetPhoto(e.koi.photoTexture, Color.white);
         else

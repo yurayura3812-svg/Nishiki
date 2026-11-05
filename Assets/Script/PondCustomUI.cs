@@ -48,6 +48,21 @@ public class PondCustomUI : MonoBehaviour
             return;
         }
         WireAndFill();
+        Loc.Changed += OnLoc;
+    }
+
+    void OnDestroy()
+    {
+        Loc.Changed -= OnLoc;
+    }
+
+    void OnLoc()
+    {
+        int stay = page;
+        ShowPage(0);
+        WireAndFill();
+        ShowPage(stay);
+        Loc.Apply(transform);
     }
 
     void InitLook()
@@ -69,7 +84,8 @@ public class PondCustomUI : MonoBehaviour
         FillFloorGrid();
         FillFloatGrid();
         BindPager();
-        ShowPage(0);
+        ShowPage(page);
+        Loc.Apply(transform);
     }
 
     void CachePanels()
@@ -218,7 +234,7 @@ public class PondCustomUI : MonoBehaviour
         check.SetActive(on);
         koiChecks[key] = check;
 
-        var detail = PillButton(rt, "詳細", () => ShowDetail(koi));
+        var detail = PillButton(rt, Loc.Get("custom.detail"), () => ShowDetail(koi));
         var dRt = detail.GetComponent<RectTransform>();
         dRt.anchorMin = new Vector2(0.25f, 0.04f);
         dRt.anchorMax = new Vector2(0.75f, 0.24f);
@@ -250,7 +266,7 @@ public class PondCustomUI : MonoBehaviour
         string selected = save == null || string.IsNullOrEmpty(save.floatId)
             ? "mone"
             : save.floatId;
-        CreateFloatCard(body, PondCustomStore.NoFloatId, "なし", null, selected == PondCustomStore.NoFloatId);
+        CreateFloatCard(body, PondCustomStore.NoFloatId, Loc.Get("custom.none"), null, selected == PondCustomStore.NoFloatId);
         foreach (var opt in PondCustomStore.FloatOptions)
         {
             if (opt == null) continue;
@@ -403,16 +419,16 @@ public class PondCustomUI : MonoBehaviour
             PlaceScroll(koiScrollRt, koiBody, true);
             PlaceScroll(floorScrollRt, floorBody, true);
             PlaceScroll(floatScrollRt, Stash(), false);
-            if (leftTitle != null) leftTitle.text = "泳がせる鯉";
-            if (rightTitle != null) rightTitle.text = "背景";
+            if (leftTitle != null) leftTitle.text = Loc.Get("custom.koi");
+            if (rightTitle != null) rightTitle.text = Loc.Get("custom.floor");
         }
         else
         {
             PlaceScroll(koiScrollRt, Stash(), false);
             PlaceScroll(floorScrollRt, koiBody, true);
             PlaceScroll(floatScrollRt, floorBody, true);
-            if (leftTitle != null) leftTitle.text = "背景";
-            if (rightTitle != null) rightTitle.text = "浮いてるもの";
+            if (leftTitle != null) leftTitle.text = Loc.Get("custom.floor");
+            if (rightTitle != null) rightTitle.text = Loc.Get("custom.float");
         }
         if (prevBtn != null) prevBtn.SetActive(page == 1);
         if (nextBtn != null) nextBtn.SetActive(page == 0);

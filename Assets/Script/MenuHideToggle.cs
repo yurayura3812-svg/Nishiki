@@ -14,6 +14,9 @@ public class MenuHideToggle : MonoBehaviour
 
     void Awake()
     {
+        if (GetComponent<SettingsUI>() == null)
+            gameObject.AddComponent<SettingsUI>();
+
         var hide = FindDeep("HihyojiButton");
         if (hide == null) return;
 

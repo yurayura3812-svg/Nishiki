@@ -20,20 +20,34 @@ public class KoiDetailUI : MonoBehaviour
         Wire("DeleteButton", OpenConfirm);
         EnsureDeleteButton();
         Paint();
+        Loc.Apply(transform);
+        Loc.Changed += OnLoc;
+    }
+
+    void OnDestroy()
+    {
+        Loc.Changed -= OnLoc;
+    }
+
+    void OnLoc()
+    {
+        Paint();
+        Loc.Apply(transform);
+        RefreshConfirm();
     }
 
     void Paint()
     {
         SetText("UserName", "User name");
         SetText("DetailPanel", "RankLabel", "");
-        SetText("DetailPanel", "NameLabel", koi != null ? koi.name : "なまえ");
-        SetText("DetailPanel", "BreedLabel", "品種");
-        SetText("DetailPanel", "TotalLabel", "生まれた日");
-        SetText("DetailPanel", "BodyLabel", "入賞回数");
+        SetText("DetailPanel", "NameLabel", koi != null ? Loc.KoiName(koi.name) : Loc.Get("detail.name_fallback"));
+        SetText("DetailPanel", "BreedLabel", Loc.Get("detail.breed"));
+        SetText("DetailPanel", "TotalLabel", Loc.Get("detail.born"));
+        SetText("DetailPanel", "BodyLabel", Loc.Get("detail.awards"));
 
         var score = HinpyokaiScore.From(koi);
-        SetText("DetailPanel", "PatternLabel", "模様          " + score.pattern + " 点");
-        SetText("DetailPanel", "GlossLabel", "艶            " + score.gloss + " 点");
+        SetText("DetailPanel", "PatternLabel", Loc.Format("detail.pattern_pts", score.pattern));
+        SetText("DetailPanel", "GlossLabel", Loc.Format("detail.gloss_pts", score.gloss));
 
         var enter = FindDeep("EnterButton");
         if (enter != null)
@@ -91,7 +105,7 @@ public class KoiDetailUI : MonoBehaviour
         textRt.offsetMax = Vector2.zero;
         var label = textGo.AddComponent<Text>();
         label.font = font;
-        label.text = "削除";
+        label.text = Loc.Get("detail.delete");
         label.alignment = TextAnchor.MiddleCenter;
         label.color = Color.white;
         label.fontSize = 24;
@@ -102,8 +116,27 @@ public class KoiDetailUI : MonoBehaviour
     {
         if (koi == null) return;
         if (confirm == null) confirm = BuildConfirm();
+        RefreshConfirm();
         confirm.SetActive(true);
         confirm.transform.SetAsLastSibling();
+    }
+
+    void RefreshConfirm()
+    {
+        if (confirm == null) return;
+        var msg = confirm.transform.Find("Box/Message");
+        var msgText = msg != null ? msg.GetComponent<Text>() : null;
+        if (msgText != null) msgText.text = Loc.Get("detail.confirm");
+        SetChildText(confirm.transform, "Box/Cancel/Text", Loc.Get("detail.cancel"));
+        SetChildText(confirm.transform, "Box/Ok/Text", Loc.Get("detail.ok"));
+        SetChildText(transform, "DeleteButton/Text", Loc.Get("detail.delete"));
+    }
+
+    static void SetChildText(Transform root, string path, string value)
+    {
+        var t = root.Find(path);
+        var text = t != null ? t.GetComponent<Text>() : null;
+        if (text != null) text.text = value;
     }
 
     void CloseConfirm()
@@ -148,7 +181,7 @@ public class KoiDetailUI : MonoBehaviour
         msgRt.offsetMax = Vector2.zero;
         var msg = msgGo.AddComponent<Text>();
         msg.font = font;
-        msg.text = "この鯉を本当に消しますか？";
+        msg.text = Loc.Get("detail.confirm");
         msg.alignment = TextAnchor.MiddleCenter;
         msg.color = new Color(0.22f, 0.32f, 0.45f);
         msg.fontSize = 28;
@@ -156,8 +189,8 @@ public class KoiDetailUI : MonoBehaviour
         msg.verticalOverflow = VerticalWrapMode.Overflow;
         msg.raycastTarget = false;
 
-        MakeDialogButton(boxRt, "Cancel", "やめる", new Vector2(0.08f, 0.1f), new Vector2(0.48f, 0.34f), new Color(0.82f, 0.88f, 0.93f), CloseConfirm);
-        MakeDialogButton(boxRt, "Ok", "消す", new Vector2(0.52f, 0.1f), new Vector2(0.92f, 0.34f), new Color(0.9f, 0.5f, 0.46f), ConfirmDelete);
+        MakeDialogButton(boxRt, "Cancel", Loc.Get("detail.cancel"), new Vector2(0.08f, 0.1f), new Vector2(0.48f, 0.34f), new Color(0.82f, 0.88f, 0.93f), CloseConfirm);
+        MakeDialogButton(boxRt, "Ok", Loc.Get("detail.ok"), new Vector2(0.52f, 0.1f), new Vector2(0.92f, 0.34f), new Color(0.9f, 0.5f, 0.46f), ConfirmDelete);
 
         overlay.SetActive(false);
         return overlay;

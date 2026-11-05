@@ -31,6 +31,19 @@ public class KoiListUI : MonoBehaviour
         WireTab("TabEdit", ShowEdit);
         FillList();
         ShowList();
+        Loc.Apply(transform);
+        Loc.Changed += OnLoc;
+    }
+
+    void OnDestroy()
+    {
+        Loc.Changed -= OnLoc;
+    }
+
+    void OnLoc()
+    {
+        FillList();
+        Loc.Apply(transform);
     }
 
     public void ShowList()
@@ -250,7 +263,7 @@ public class KoiListUI : MonoBehaviour
         nameRt.offsetMax = Vector2.zero;
         var label = nameGo.AddComponent<Text>();
         label.font = font;
-        label.text = string.IsNullOrEmpty(koi.name) ? "鯉" : koi.name;
+        label.text = Loc.KoiName(koi.name);
         label.alignment = TextAnchor.MiddleCenter;
         label.color = new Color(0.22f, 0.16f, 0.12f, 1f);
         label.fontSize = 20;

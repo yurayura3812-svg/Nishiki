@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6a8ef5377ffe2a5418b79faa88e82685, type: 3}
-  m_Name: "\u7D05\u767D"
+  m_Name: "\u3042\u304B\u306D"
   m_EditorClassIdentifier: Assembly-CSharp::KoiPatternData
   mainColor: {r: 0.9312101, g: 0.9020842, b: 0.8454397, a: 1}
   sub1Color: {r: 0.9596702, g: 0.2079228, b: 0.18728651, a: 1}

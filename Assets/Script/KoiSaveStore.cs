@@ -22,6 +22,9 @@ public class KoiSaveRecord
     public float seedZ;
     public float bellyLimit;
     public string photoFile;
+    public float gloss;
+    public float body;
+    public bool hasStats;
 }
 
 [Serializable]
@@ -49,13 +52,20 @@ public static class KoiSaveStore
         var seen = new HashSet<string>();
 
         var deleted = DeletedSet();
+        var saved = ReadFile().koi;
 
         foreach (var data in LoadBuiltIn())
         {
             if (data == null) continue;
             var key = KeyOf(data);
             if (deleted.Contains(key)) continue;
-            if (seen.Add(key)) result.Add(data);
+            if (!seen.Add(key)) continue;
+
+            var live = UnityEngine.Object.Instantiate(data);
+            live.name = data.name;
+            live.koiId = data.koiId;
+            OverlaySaved(live, FindSaved(saved, data));
+            result.Add(live);
         }
 
         foreach (var data in LoadSaved())
@@ -91,12 +101,14 @@ public static class KoiSaveStore
         Directory.CreateDirectory(Dir);
         Directory.CreateDirectory(PhotoDir);
 
-        if (string.IsNullOrEmpty(data.koiId))
+        if (string.IsNullOrEmpty(data.koiId) && !IsNamelessBuiltIn(data.name))
             data.koiId = Guid.NewGuid().ToString("N");
 
         var file = ReadFile();
         var rec = FromAsset(data);
-        int idx = file.koi.FindIndex(k => k != null && k.koiId == rec.koiId);
+        int idx = IndexOfRecord(file.koi, data);
+        if (string.IsNullOrEmpty(rec.photoFile) && idx >= 0 && !string.IsNullOrEmpty(file.koi[idx].photoFile))
+            rec.photoFile = file.koi[idx].photoFile;
         if (idx >= 0) file.koi[idx] = rec;
         else file.koi.Add(rec);
 
@@ -147,6 +159,105 @@ public static class KoiSaveStore
             if (!string.IsNullOrEmpty(k)) set.Add(k);
         }
         return set;
+    }
+
+    public static string AliasDisplayName(string name)
+    {
+        switch (name)
+        {
+            case "紅白": return "あかね";
+            case "大正三色": return "こはく";
+            case "昭和三色": return "すみ";
+            case "白写り": return "しらゆき";
+            case "緋写り": return "べに";
+            case "山吹黄金": return "きいろ";
+            case "プラチナ": return "ぎん";
+            case "空鯉": return "そら";
+            case "黒": return "くろ";
+            case "koi": return "みずき";
+            case "test": return "ぽち";
+            case "名無しの錦鯉": return "ひな";
+            default: return name;
+        }
+    }
+
+    static bool NamesMatch(string a, string b)
+    {
+        if (a == b) return true;
+        if (string.IsNullOrEmpty(a) || string.IsNullOrEmpty(b)) return false;
+        return AliasDisplayName(a) == b || a == AliasDisplayName(b) || AliasDisplayName(a) == AliasDisplayName(b);
+    }
+
+    static bool IsNamelessBuiltIn(string displayName)
+    {
+        if (string.IsNullOrEmpty(displayName)) return false;
+        foreach (var b in LoadBuiltIn())
+        {
+            if (b != null && b.name == displayName && string.IsNullOrEmpty(b.koiId))
+                return true;
+        }
+        return false;
+    }
+
+    static int IndexOfRecord(List<KoiSaveRecord> list, KoiPatternData data)
+    {
+        if (list == null || data == null) return -1;
+        if (!string.IsNullOrEmpty(data.koiId))
+        {
+            int byId = list.FindIndex(k => k != null && k.koiId == data.koiId);
+            if (byId >= 0) return byId;
+        }
+        return list.FindIndex(k =>
+            k != null && NamesMatch(k.displayName, data.name) &&
+            (string.IsNullOrEmpty(k.koiId) || string.IsNullOrEmpty(data.koiId)));
+    }
+
+    static KoiSaveRecord FindSaved(List<KoiSaveRecord> list, KoiPatternData data)
+    {
+        int i = IndexOfRecord(list, data);
+        return i >= 0 ? list[i] : null;
+    }
+
+    static void OverlaySaved(KoiPatternData live, KoiSaveRecord rec)
+    {
+        if (live == null || rec == null) return;
+        if (rec.hasStats)
+        {
+            live.gloss = rec.gloss;
+            live.body = rec.body;
+            live.hasStats = true;
+        }
+        var photo = LoadPhoto(rec);
+        if (photo != null) live.photoTexture = photo;
+    }
+
+    public static string PhotoFileName(KoiPatternData d)
+    {
+        if (d == null) return "koi.png";
+        if (!string.IsNullOrEmpty(d.koiId)) return d.koiId + ".png";
+        var n = string.IsNullOrEmpty(d.name) ? "koi" : d.name;
+        foreach (var c in Path.GetInvalidFileNameChars())
+            n = n.Replace(c, '_');
+        return "name_" + n + ".png";
+    }
+
+    static Texture2D LoadPhoto(KoiSaveRecord rec)
+    {
+        if (rec == null || string.IsNullOrEmpty(rec.photoFile)) return null;
+        string path = Path.Combine(PhotoDir, rec.photoFile);
+        if (!File.Exists(path)) return null;
+        try
+        {
+            var tex = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+            if (!tex.LoadImage(File.ReadAllBytes(path))) return null;
+            tex.name = "Photo_" + rec.displayName;
+            return tex;
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning("KoiSaveStore: 写真を読めませんでした: " + e.Message);
+            return null;
+        }
     }
 
     static string KeyOfSaved(KoiSaveRecord rec)
@@ -274,17 +385,22 @@ public static class KoiSaveStore
             seedX = d.patternSeed.x,
             seedY = d.patternSeed.y,
             seedZ = d.patternSeed.z,
-            bellyLimit = d.bellyLimit
+            bellyLimit = d.bellyLimit,
+            gloss = d.gloss,
+            body = d.body,
+            hasStats = d.hasStats
         };
 
-        if (d.photoTexture != null)
+        if (d.photoTexture != null && d.photoTexture.isReadable)
         {
-            rec.photoFile = d.koiId + ".png";
+            rec.photoFile = PhotoFileName(d);
             try
             {
                 byte[] png = d.photoTexture.EncodeToPNG();
                 if (png != null && png.Length > 0)
                     File.WriteAllBytes(Path.Combine(PhotoDir, rec.photoFile), png);
+                else
+                    rec.photoFile = null;
             }
             catch (Exception e)
             {
@@ -312,18 +428,11 @@ public static class KoiSaveStore
         d.sub2Detail = rec.sub2Detail;
         d.patternSeed = new Vector3(rec.seedX, rec.seedY, rec.seedZ);
         d.bellyLimit = rec.bellyLimit;
+        d.gloss = rec.hasStats ? rec.gloss : 40f;
+        d.body = rec.hasStats ? rec.body : 40f;
+        d.hasStats = rec.hasStats;
 
-        if (!string.IsNullOrEmpty(rec.photoFile))
-        {
-            string path = Path.Combine(PhotoDir, rec.photoFile);
-            if (File.Exists(path))
-            {
-                var tex = new Texture2D(2, 2, TextureFormat.RGBA32, false);
-                tex.LoadImage(File.ReadAllBytes(path));
-                tex.name = "Photo_" + d.name;
-                d.photoTexture = tex;
-            }
-        }
+        d.photoTexture = LoadPhoto(rec);
 
         return d;
     }

@@ -23,4 +23,9 @@ public class KoiPatternData : ScriptableObject
     public Vector3 patternSeed; 
     [Range(-0.5f, 0.5f)] public float bellyLimit = 0.0f; 
     public Texture2D photoTexture;
+
+    [Header("Feed Stats")]
+    [Range(0f, 100f)] public float gloss = 40f;
+    [Range(0f, 100f)] public float body = 40f;
+    public bool hasStats;
 }

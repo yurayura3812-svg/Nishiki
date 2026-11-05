@@ -31,19 +31,33 @@ public class KoiListUI : MonoBehaviour
         WireTab("TabEdit", ShowEdit);
         FillList();
         ShowList();
+        ApplyAdmin();
         Loc.Apply(transform);
         Loc.Changed += OnLoc;
+        AppSettingsStore.Changed += ApplyAdmin;
     }
 
     void OnDestroy()
     {
         Loc.Changed -= OnLoc;
+        AppSettingsStore.Changed -= ApplyAdmin;
     }
 
     void OnLoc()
     {
         FillList();
         Loc.Apply(transform);
+        ApplyAdmin();
+    }
+
+    void ApplyAdmin()
+    {
+        bool on = AppSettingsStore.AdminTools;
+        var create = FindDeep("TabCreate");
+        if (create != null) create.gameObject.SetActive(on);
+        var edit = FindDeep("TabEdit");
+        if (edit != null) edit.gameObject.SetActive(on);
+        if (!on) ShowList();
     }
 
     public void ShowList()

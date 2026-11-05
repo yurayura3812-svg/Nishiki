@@ -30,6 +30,8 @@ public class KoiNaturalTurn : MonoBehaviour
     private float targetDepthOffset = 0f;
     private float currentDepthOffset = 0f;
     private float lastY;
+    private float eatLunge;
+    private KoiController eater;
 
     void Start()
     {
@@ -49,6 +51,7 @@ public class KoiNaturalTurn : MonoBehaviour
         float angle = Random.Range(0f, 360f);
         currentVelocityDirection = new Vector3(Mathf.Sin(angle), 0, Mathf.Cos(angle));
         transform.rotation = Quaternion.LookRotation(currentVelocityDirection);
+        eater = GetComponent<KoiController>();
     }
 
     void Update()
@@ -74,26 +77,84 @@ public class KoiNaturalTurn : MonoBehaviour
                 }
             }
         }
-        // 段階的にブレーキをかける
-        if (closestObstacleDist < 0.6f) crowdMultiplier = 0.1f; 
+        if (closestObstacleDist < 0.6f) crowdMultiplier = 0.1f;
         else if (closestObstacleDist < 1.0f) crowdMultiplier = 0.4f;
         else if (closestObstacleDist < 1.5f) crowdMultiplier = 0.7f;
 
-        // --- 2. 緩急：加速を非常にマイルドに ---
-        if (!isResting && Time.frameCount % 300 == 0 && Random.value < 0.25f) {
-            burstEnergy = 0.3f; // 0.6f から 0.3f へ。ゆったりした動きに
-            targetDepthOffset = Random.Range(0f, 0.4f); // 深度の幅を広げて重なりを回避
+        bool seekingFood = FeedController.TryAttract(transform, out Vector3 cluster, out _, out _, out bool milling);
+        float turnMul = 0.72f;
+        if (seekingFood)
+        {
+            isResting = false;
+
+            Vector3 sep = Vector3.zero;
+            float nearestKoi = float.MaxValue;
+            foreach (GameObject other in otherKois)
+            {
+                if (other == null || other == gameObject) continue;
+                Vector3 away = transform.position - other.transform.position;
+                away.y = 0f;
+                float d = away.magnitude;
+                if (d < nearestKoi) nearestKoi = d;
+                if (d > 0.001f && d < 0.52f)
+                    sep += away.normalized * ((0.52f - d) / 0.52f);
+            }
+
+            Vector3 slot = FeedController.GatherSlot(transform, cluster);
+            slot.y = cluster.y;
+            Vector3 toSlot = slot - transform.position;
+            toSlot.y = 0f;
+            float slotDist = toSlot.magnitude;
+            Vector3 inward = cluster - transform.position;
+            inward.y = 0f;
+
+            Vector3 foodDir;
+            if (slotDist < 0.18f)
+            {
+                foodDir = inward.sqrMagnitude > 0.0001f ? inward.normalized : transform.forward;
+                turnMul = 0.85f;
+                milling = true;
+            }
+            else
+            {
+                foodDir = toSlot / Mathf.Max(slotDist, 0.001f);
+                if (sep.sqrMagnitude > 0.0001f)
+                    foodDir = (foodDir + sep.normalized * 1.35f).normalized;
+                turnMul = 1.05f;
+            }
+
+            if (nearestKoi < 0.38f) crowdMultiplier = 0.22f;
+            else if (nearestKoi < 0.55f) crowdMultiplier = Mathf.Min(crowdMultiplier, 0.45f);
+
+            targetDepthOffset = Mathf.Clamp(centerPosition.y - cluster.y, 0.02f, 0.38f);
+            currentVelocityDirection = Vector3.Slerp(currentVelocityDirection, foodDir, Time.deltaTime * 1.7f).normalized;
+
+            var bite = FeedController.ClosestPellet(transform.position + transform.forward * 0.38f, 0.36f);
+            if (bite != null && eater != null && eater.Nibble(bite))
+                eatLunge = 0.12f;
         }
-        burstEnergy = Mathf.Lerp(burstEnergy, 0f, Time.deltaTime * 0.25f); // 減衰をさらに遅く
+
+        // --- 2. 緩急：加速を非常にマイルドに ---
+        if (!seekingFood && !isResting && Time.frameCount % 300 == 0 && Random.value < 0.25f) {
+            burstEnergy = 0.3f;
+            targetDepthOffset = Random.Range(0f, 0.4f);
+        }
+        burstEnergy = Mathf.Lerp(burstEnergy, 0f, Time.deltaTime * 0.25f);
+        eatLunge = Mathf.MoveTowards(eatLunge, 0f, Time.deltaTime * 1.4f);
         
-        float finalSpeedBase = (isResting) ? moveSpeed * 0.02f : (moveSpeed + burstEnergy);
-        smoothSpeedMultiplier = Mathf.Lerp(smoothSpeedMultiplier, finalSpeedBase * crowdMultiplier, Time.deltaTime * 0.8f);
+        float finalSpeedBase = (isResting) ? moveSpeed * 0.02f : (moveSpeed + burstEnergy) * 1.22f;
+        if (seekingFood)
+            finalSpeedBase = milling ? moveSpeed * 0.42f : moveSpeed * 2.4f;
+        if (eatLunge > 0f)
+            finalSpeedBase += 0.22f;
+        smoothSpeedMultiplier = Mathf.Lerp(smoothSpeedMultiplier, finalSpeedBase * crowdMultiplier, Time.deltaTime * (seekingFood ? 5.5f : 1.6f));
 
         transform.Translate(Vector3.forward * smoothSpeedMultiplier * Time.deltaTime);
 
         // --- 3. 深度とピッチ ---
-        currentDepthOffset = Mathf.Lerp(currentDepthOffset, targetDepthOffset, Time.deltaTime * 0.4f);
-        float currentY = centerPosition.y - currentDepthOffset;
+        currentDepthOffset = Mathf.Lerp(currentDepthOffset, targetDepthOffset, Time.deltaTime * (seekingFood ? 1.6f : 0.4f));
+        float waterCap = FeedController.WaterY - 0.14f;
+        float currentY = Mathf.Min(centerPosition.y - currentDepthOffset, waterCap);
 
         float verticalDelta = currentY - lastY;
         float targetPitch = -Mathf.Atan2(verticalDelta, smoothSpeedMultiplier * Time.deltaTime) * Mathf.Rad2Deg;
@@ -106,7 +167,7 @@ public class KoiNaturalTurn : MonoBehaviour
         float relX = pos.x - mainCamera.transform.position.x;
         float relZ = pos.z - mainCamera.transform.position.z;
 
-        if (Mathf.Abs(relX) > limitX * individualThreshold || Mathf.Abs(relZ) > limitZ * individualThreshold) {
+        if (!seekingFood && (Mathf.Abs(relX) > limitX * individualThreshold || Mathf.Abs(relZ) > limitZ * individualThreshold)) {
             Vector3 towardCenter = (new Vector3(mainCamera.transform.position.x, centerPosition.y, mainCamera.transform.position.z) - transform.position).normalized;
             currentVelocityDirection = Vector3.Slerp(currentVelocityDirection, towardCenter, Time.deltaTime * 0.8f).normalized;
             isResting = false;
@@ -120,13 +181,16 @@ public class KoiNaturalTurn : MonoBehaviour
         currentRoll = Mathf.Lerp(currentRoll, targetRoll, Time.deltaTime * bankSpeed);
 
         Quaternion finalRot = baseYaw * Quaternion.Euler(currentPitch, 0, currentRoll);
-        transform.rotation = Quaternion.Slerp(transform.rotation, finalRot, rotationSpeed * Time.deltaTime);
+        transform.rotation = Quaternion.Slerp(transform.rotation, finalRot, rotationSpeed * turnMul * Time.deltaTime);
 
         // --- 5. タイマー ---
         timer += Time.deltaTime;
         if (timer > individualTimer) {
-            currentVelocityDirection = Quaternion.Euler(0, Random.Range(-25f, 25f), 0) * currentVelocityDirection;
-            isResting = (Random.value < 0.5f); // 停滞確率をさらにアップ
+            if (!seekingFood)
+            {
+                currentVelocityDirection = Quaternion.Euler(0, Random.Range(-25f, 25f), 0) * currentVelocityDirection;
+                isResting = (Random.value < 0.5f);
+            }
             timer = 0;
             individualTimer = Random.Range(6.0f, 12.0f); 
         }

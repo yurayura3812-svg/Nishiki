@@ -197,7 +197,7 @@ namespace KoiPond
             _accum -= steps * dt;
 
             // デバッグ用クリック (新旧両方の Input System に対応)
-            if (clickToSplash)
+            if (clickToSplash && !FeedController.IsFeeding)
             {
                 bool clicked = false;
                 Vector2 mousePos = Vector2.zero;

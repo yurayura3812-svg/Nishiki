@@ -22,11 +22,20 @@ public class KoiDetailUI : MonoBehaviour
         Paint();
         Loc.Apply(transform);
         Loc.Changed += OnLoc;
+        AppSettingsStore.Changed += OnAdmin;
     }
 
     void OnDestroy()
     {
         Loc.Changed -= OnLoc;
+        AppSettingsStore.Changed -= OnAdmin;
+    }
+
+    void OnAdmin()
+    {
+        Paint();
+        if (!AppSettingsStore.AdminTools && confirm != null)
+            confirm.SetActive(false);
     }
 
     void OnLoc()
@@ -45,9 +54,8 @@ public class KoiDetailUI : MonoBehaviour
         SetText("DetailPanel", "TotalLabel", Loc.Get("detail.born"));
         SetText("DetailPanel", "BodyLabel", Loc.Get("detail.awards"));
 
-        var score = HinpyokaiScore.From(koi);
-        SetText("DetailPanel", "PatternLabel", Loc.Format("detail.pattern_pts", score.pattern));
-        SetText("DetailPanel", "GlossLabel", Loc.Format("detail.gloss_pts", score.gloss));
+        SetActive("PatternLabel", false);
+        SetActive("GlossLabel", false);
 
         var enter = FindDeep("EnterButton");
         if (enter != null)
@@ -57,7 +65,7 @@ public class KoiDetailUI : MonoBehaviour
         }
 
         var del = FindDeep("DeleteButton");
-        if (del != null) del.gameObject.SetActive(koi != null);
+        if (del != null) del.gameObject.SetActive(koi != null && AppSettingsStore.AdminTools);
 
         var photo = FindDeep("KoiPhoto");
         if (photo == null) photo = FindPath("DetailPanel", "Photo");
@@ -114,7 +122,7 @@ public class KoiDetailUI : MonoBehaviour
 
     void OpenConfirm()
     {
-        if (koi == null) return;
+        if (koi == null || !AppSettingsStore.AdminTools) return;
         if (confirm == null) confirm = BuildConfirm();
         RefreshConfirm();
         confirm.SetActive(true);
@@ -235,6 +243,12 @@ public class KoiDetailUI : MonoBehaviour
         if (btn == null) return;
         btn.onClick.RemoveAllListeners();
         btn.onClick.AddListener(action);
+    }
+
+    void SetActive(string name, bool on)
+    {
+        var t = FindDeep(name);
+        if (t != null) t.gameObject.SetActive(on);
     }
 
     void SetText(params string[] pathAndValue)

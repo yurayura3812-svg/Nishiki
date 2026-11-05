@@ -14,6 +14,8 @@ public class AppSettingsSave
 /// </summary>
 public static class AppSettingsStore
 {
+    public static event Action Changed;
+
     static AppSettingsSave cached;
     static string PathName => Path.Combine(Application.persistentDataPath, "KoiSaves", "settings.json");
 
@@ -46,6 +48,7 @@ public static class AppSettingsStore
         cached = save;
         Directory.CreateDirectory(Path.GetDirectoryName(PathName) ?? ".");
         File.WriteAllText(PathName, JsonUtility.ToJson(save, true));
+        Changed?.Invoke();
     }
 
     public static bool AdminTools

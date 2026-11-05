@@ -121,11 +121,19 @@ public static class PondCustomStore
         if (all == null) return new List<KoiPatternData>();
         if (!save.koiSelectionSaved) return all;
 
-        var ids = new HashSet<string>(save.swimmingKoiIds ?? new List<string>());
+        var ids = new HashSet<string>();
+        foreach (var id in save.swimmingKoiIds ?? new List<string>())
+        {
+            if (string.IsNullOrEmpty(id)) continue;
+            ids.Add(id);
+            ids.Add(KoiSaveStore.AliasDisplayName(id));
+        }
         var result = new List<KoiPatternData>();
         foreach (var k in all)
         {
-            if (k != null && ids.Contains(KoiKey(k))) result.Add(k);
+            if (k == null) continue;
+            var key = KoiKey(k);
+            if (ids.Contains(key) || ids.Contains(KoiSaveStore.AliasDisplayName(key))) result.Add(k);
         }
         return result;
     }

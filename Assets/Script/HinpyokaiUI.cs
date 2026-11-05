@@ -237,6 +237,15 @@ public class HinpyokaiUI : MonoBehaviour
         SetText("DetailPanel", "BodyLabel", Loc.Format("judging.body_pts", e.score.body));
         if (e.koi != null && e.koi.photoTexture != null)
             SetPhoto(e.koi.photoTexture, Color.white);
+        else if (e.koi != null && KoiPhotoStudio.Instance != null)
+        {
+            SetPhoto(Texture2D.whiteTexture, e.koi.mainColor);
+            KoiPhotoStudio.Instance.RequestCapture(e.koi, () =>
+            {
+                if (e.koi != null && e.koi.photoTexture != null)
+                    SetPhoto(e.koi.photoTexture, Color.white);
+            });
+        }
         else
             SetPhoto(Texture2D.whiteTexture, e.koi != null ? e.koi.mainColor : Color.white);
     }

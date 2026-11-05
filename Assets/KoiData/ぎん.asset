@@ -56,7 +56,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6a8ef5377ffe2a5418b79faa88e82685, type: 3}
-  m_Name: "\u30D7\u30E9\u30C1\u30CA"
+  m_Name: "\u304E\u3093"
   m_EditorClassIdentifier: Assembly-CSharp::KoiPatternData
   mainColor: {r: 0.8175618, g: 0.8477086, b: 0.8046479, a: 1}
   sub1Color: {r: 0.9514823, g: 0.24980572, b: 0.23757635, a: 1}

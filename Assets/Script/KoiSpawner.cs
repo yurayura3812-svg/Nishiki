@@ -14,6 +14,9 @@ public class KoiSpawner : MonoBehaviour
         // 1. フォルダ内からアセットを自動ロード
         LoadAllPatternAssets();
 
+        if (GetComponent<FeedController>() == null)
+            gameObject.AddComponent<FeedController>();
+
         // 2. ロードされたデータの数だけ生成
         foreach (var data in dataList)
         {
@@ -73,7 +76,10 @@ public class KoiSpawner : MonoBehaviour
         KoiController controller = newKoi.GetComponent<KoiController>();
         if (controller != null)
         {
-            controller.patternData = data;
+            var live = Instantiate(data);
+            live.name = data.name;
+            live.koiId = data.koiId;
+            controller.patternData = live;
             controller.ApplyDNA();
         }
     }

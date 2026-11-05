@@ -313,6 +313,17 @@ public class BreedingUIManager : MonoBehaviour
         if (string.IsNullOrEmpty(childData.koiId))
             childData.koiId = System.Guid.NewGuid().ToString("N");
 
+        if (KoiPhotoStudio.Instance != null)
+        {
+            KoiPhotoStudio.Instance.RequestCapture(childData, () => PersistChild(childData, finalName));
+            return;
+        }
+
+        PersistChild(childData, finalName);
+    }
+
+    void PersistChild(KoiPatternData childData, string finalName)
+    {
         KoiSaveStore.Save(childData);
 
 #if UNITY_EDITOR

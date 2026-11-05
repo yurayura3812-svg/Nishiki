@@ -25,8 +25,10 @@ public class HinpyokaiScore
             float amount = (data.sub1Amount + data.sub2Amount) * 0.5f;
             float detail = (data.sub1Detail + data.sub2Detail) * 0.5f;
             s.pattern = ClampScore(50f + amount * 30f + detail * 20f);
-            s.body = ClampScore(82f + data.bellyLimit * 40f);
-            s.gloss = 70;
+            s.body = data.hasStats
+                ? ClampScore(data.body)
+                : ClampScore(82f + data.bellyLimit * 40f);
+            s.gloss = data.hasStats ? ClampScore(data.gloss) : 40;
         }
         s.total = Mathf.Clamp(Mathf.RoundToInt(s.pattern * 0.4f + s.body * 0.3f + s.gloss * 0.3f), 1, 100);
         return s;

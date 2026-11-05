@@ -10,17 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6a8ef5377ffe2a5418b79faa88e82685, type: 3}
-  m_Name: "\u9ED2"
+  m_Name: "\u307F\u305A\u304D"
   m_EditorClassIdentifier: Assembly-CSharp::KoiPatternData
-  mainColor: {r: 0.21024257, g: 0.21024257, b: 0.21024257, a: 1}
-  sub1Color: {r: 0.96452457, g: 0.9319328, b: 1, a: 1}
-  sub1Scale: 6.0727706
-  sub1Amount: 0
-  sub1Detail: 1.8347096
-  sub2Color: {r: 0.45439285, g: 0.49767154, b: 0.6511282, a: 1}
-  sub2Scale: 6.0968385
-  sub2Amount: 0
-  sub2Detail: 0.041006405
-  patternSeed: {x: 22.889446, y: 78.0284, z: 12.752247}
+  mainColor: {r: 0.7189152, g: 0.68906844, b: 0.70561206, a: 1}
+  sub1Color: {r: 0, g: 0, b: 0, a: 1}
+  sub1Scale: 7.66522
+  sub1Amount: 0.5507932
+  sub1Detail: 1.6260902
+  sub2Color: {r: 0.7666738, g: 0.19649343, b: 0.14014304, a: 1}
+  sub2Scale: 2.98331
+  sub2Amount: 0.29459754
+  sub2Detail: 0.5888885
+  patternSeed: {x: 9.86148, y: 45.803497, z: 41.645508}
   bellyLimit: 0
   photoTexture: {fileID: 0}

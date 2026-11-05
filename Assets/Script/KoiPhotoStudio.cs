@@ -75,7 +75,7 @@ public class KoiPhotoStudio : MonoBehaviour
 
         // --- 実際の撮影（ピクセル読み込み） ---
         RenderTexture.active = targetRT;
-        Texture2D photo = new Texture2D(targetRT.width, targetRT.height, TextureFormat.RGBA32, false, true);
+        Texture2D photo = new Texture2D(targetRT.width, targetRT.height, TextureFormat.RGBA32, false, false);
         photo.ReadPixels(new Rect(0, 0, targetRT.width, targetRT.height), 0, 0);
         photo.Apply();
         RenderTexture.active = null;
@@ -83,9 +83,14 @@ public class KoiPhotoStudio : MonoBehaviour
         photo.name = "Photo_" + data.name;
         data.photoTexture = photo;
 
-        // --- 撮影完了後、UIがあれば反映 ---
-        if (targetUI != null) targetUI.texture = data.photoTexture;
-        
+        if (targetUI != null)
+        {
+            targetUI.texture = data.photoTexture;
+            targetUI.color = Color.white;
+        }
+
+        KoiSaveStore.Save(data);
+
         studioKoi.gameObject.SetActive(false);
         yield break;
     }

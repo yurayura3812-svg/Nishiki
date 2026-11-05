@@ -179,8 +179,8 @@ public class SettingsUI : MonoBehaviour
         jaBg = Chip(prt, "Ja", "日本語", new Vector2(0.08f, 0.52f), new Vector2(0.48f, 0.66f), () => Loc.SetLanguage(Loc.Ja));
         enBg = Chip(prt, "En", "English", new Vector2(0.52f, 0.52f), new Vector2(0.92f, 0.66f), () => Loc.SetLanguage(Loc.En));
         adminLabel = MakeText(prt, "AdminLabel", 24, new Vector2(0.08f, 0.38f), new Vector2(0.92f, 0.5f));
-        adminOnBg = Chip(prt, "AdminOn", Loc.Get("settings.on"), new Vector2(0.08f, 0.22f), new Vector2(0.48f, 0.36f), () => { AppSettingsStore.AdminTools = true; Paint(); });
-        adminOffBg = Chip(prt, "AdminOff", Loc.Get("settings.off"), new Vector2(0.52f, 0.22f), new Vector2(0.92f, 0.36f), () => { AppSettingsStore.AdminTools = false; Paint(); });
+        adminOnBg = Chip(prt, "AdminOn", Loc.Get("settings.on"), new Vector2(0.08f, 0.22f), new Vector2(0.48f, 0.36f), () => { AppSettingsStore.AdminTools = true; Paint(); Loc.ApplyScene(); });
+        adminOffBg = Chip(prt, "AdminOff", Loc.Get("settings.off"), new Vector2(0.52f, 0.22f), new Vector2(0.92f, 0.36f), () => { AppSettingsStore.AdminTools = false; Paint(); Loc.ApplyScene(); });
         var closeBg = Chip(prt, "Close", Loc.Get("settings.close"), new Vector2(0.28f, 0.06f), new Vector2(0.72f, 0.18f), Close);
         closeLabel = closeBg.GetComponentInChildren<Text>();
         return go;

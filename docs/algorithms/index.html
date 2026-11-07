@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>錦 -NISHIKI- アルゴリズム図鑑</title>
+<style>
+:root{--bg:#f7f5f0;--ink:#1f2d3d;--sub:#6b7a8c;--card:#fff;--accent:#c8402f;--line:#e4e0d6}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif;background:var(--bg);color:var(--ink);line-height:1.7}
+header{padding:48px 24px 28px;text-align:center;border-bottom:1px solid var(--line);background:linear-gradient(#fff,var(--bg))}
+header h1{margin:0;font-size:32px;letter-spacing:.06em}
+header h1 span{color:var(--accent)}
+header p{margin:8px 0 0;color:var(--sub)}
+nav{position:sticky;top:0;z-index:5;background:rgba(247,245,240,.94);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);display:flex;gap:6px;justify-content:center;flex-wrap:wrap;padding:10px}
+nav a{color:var(--ink);text-decoration:none;padding:6px 14px;border-radius:999px;font-size:14px;border:1px solid var(--line);background:#fff}
+nav a:hover{border-color:var(--accent);color:var(--accent)}
+main{max-width:1240px;margin:0 auto;padding:28px 20px 60px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:40px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;text-decoration:none;color:inherit;transition:transform .15s,box-shadow .15s}
+.tile:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,.08)}
+.tile img{width:100%;height:170px;object-fit:cover;object-position:top;display:block;border-bottom:1px solid var(--line)}
+.tile div{padding:12px 16px}.tile b{display:block}.tile small{color:var(--sub)}
+section{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:32px;scroll-margin-top:70px}
+section h2{margin:0 0 4px;font-size:24px}
+.files{font-family:ui-monospace,monospace;font-size:13px;color:var(--sub);margin-bottom:12px}
+section ul{margin:0 0 16px;padding-left:1.3em}
+section img{width:100%;border-radius:10px;border:1px solid var(--line);cursor:zoom-in;display:block}
+.hint{font-size:12.5px;color:var(--sub);text-align:right;margin-top:6px}
+#lb{display:none;position:fixed;inset:0;background:rgba(10,15,25,.92);z-index:10;overflow:auto;cursor:zoom-out}
+#lb img{display:block;max-width:none;width:min(2400px,180vw);margin:20px auto}
+footer{text-align:center;color:var(--sub);font-size:13px;padding:20px}
+</style></head><body>
+<header><h1>錦 <span>-NISHIKI-</span> アルゴリズム図鑑</h1><p>ゲーム内の主要なしくみをコードから図にまとめたページ</p></header>
+<nav><a href="#breeding">交配・品評会</a><a href="#swimming">泳ぎ</a><a href="#shader">質感（シェーダー）</a></nav>
+<main>
+<div class="grid">
+<a class="tile" href="#breeding"><img src="img/breeding_judging.png" alt=""><div><b>交配・品評会</b><small>親から子への遺伝と、採点・順位の決め方</small></div></a>
+<a class="tile" href="#swimming"><img src="img/swimming.png" alt=""><div><b>泳ぎ</b><small>状態遷移と、毎フレームの移動処理</small></div></a>
+<a class="tile" href="#shader"><img src="img/shader.webp" alt=""><div><b>質感（シェーダー）</b><small>皮膚の層構造を計算の層で再現</small></div></a>
+</div>
+
+<section id="breeding"><h2>🧬 交配・品評会</h2>
+<div class="files">Assets/Script/BreedingManager.cs ・ HinpyokaiScore.cs ・ HinpyokaiUI.cs ・ KoiDetailGate.cs</div>
+<ul>
+<li>色は各色ごとに 50% でどちらかの親から継承。模様パラメータは 0.3〜0.7 の比率で両親を混ぜる</li>
+<li>模様シードには ±5 の突然変異ズレ、15% の確率で無地化</li>
+<li>総合点 = 模様×0.4 ＋ 体格×0.3 ＋ 艶×0.3（艶・体格は餌やりで上がる）</li>
+</ul>
+<img src="img/breeding_judging.png" alt="交配・品評会アルゴリズム"><div class="hint">クリックで拡大</div></section>
+
+<section id="swimming"><h2>🐟 泳ぎ</h2>
+<div class="files">Assets/Script/KoiRandomMove.cs ・ FeedController.cs ・ KoiController.cs</div>
+<ul>
+<li>餌なし：通常遊泳 ⇄ 休憩をタイマーで切り替え。画面端では中央へ向き直す</li>
+<li>餌あり：塊の周りに円形に席を割り振って集まり、近づいたら旋回しながら捕食</li>
+<li>1 口ごとに 艶 +2.4／体格 +1.1。前方の混雑度で常に減速がかかる</li>
+</ul>
+<img src="img/swimming.png" alt="泳ぎアルゴリズム"><div class="hint">クリックで拡大</div></section>
+
+<section id="shader"><h2>✨ 質感（シェーダー）</h2>
+<div class="files">Assets/URP_Koi_Pattern_Managed.shader ・ Assets/Shader/Koi*.hlsl</div>
+<ul>
+<li>粘液・鱗・色素・グアニン板という本物の皮膚の層を、シェーダーの計算の層に対応させている</li>
+<li>模様はテクスチャではなく 3D ノイズで毎フレーム計算</li>
+<li>グアニン反射が色素フィルターを通ることで「緋の照り」を表現</li>
+</ul>
+<img src="img/shader.webp" alt="質感の仕組み"><div class="hint">クリックで拡大</div></section>
+</main>
+<footer>錦 -NISHIKI- ／ docs/algorithms</footer>
+<div id="lb"><img alt=""></div>
+<script>
+const lb=document.getElementById('lb'),li=lb.querySelector('img');
+document.querySelectorAll('section img').forEach(i=>i.onclick=()=>{li.src=i.src;lb.style.display='block'});
+lb.onclick=()=>lb.style.display='none';
+document.onkeydown=e=>{if(e.key==='Escape')lb.style.display='none'};
+</script>
+</body></html>

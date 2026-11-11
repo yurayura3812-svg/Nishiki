@@ -1,0 +1,74 @@
+# README.md と docs/*.md が main で変わったら、Notion のページへ写す。
+# 必要なもの: リポジトリの Secrets に NOTION_TOKEN（Notion の連携トークン）
+name: Notion へドキュメントを同期
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - README.md
+      - docs/**
+      - tools/notion-sync/**
+  workflow_dispatch: # Actions の画面から手動で全部同期できる
+
+concurrency:
+  group: notion-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          filter: blob:none
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tools/notion-sync/package-lock.json
+
+      - run: npm ci
+        working-directory: tools/notion-sync
+
+      - name: 同期するファイルを決める
+        id: files
+        env:
+          BEFORE: ${{ github.event.before }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          if [ "$EVENT" != "push" ] || [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ] \
+             || ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
+            echo "args=--all" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          changed=$(git -c core.quotepath=off diff --name-only "$BEFORE" "$GITHUB_SHA")
+          if echo "$changed" | grep -q '^tools/notion-sync/'; then
+            echo "args=--all" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          docs=$(echo "$changed" | grep -E '^(README\.md|docs/.*\.md)$' || true)
+          {
+            echo "args<<EOF"
+            echo "$docs"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Notion へ同期
+        working-directory: tools/notion-sync
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          ARGS: ${{ steps.files.outputs.args }}
+        run: |
+          if [ -z "$NOTION_TOKEN" ]; then
+            echo "::error::Secrets に NOTION_TOKEN がありません"
+            exit 1
+          fi
+          mapfile -t list < <(printf '%s\n' "$ARGS" | sed '/^$/d')
+          node sync.mjs "${list[@]}"

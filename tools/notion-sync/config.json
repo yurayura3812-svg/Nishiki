@@ -1,0 +1,13 @@
+{
+  "repo": "yurayura3812-svg/Nishiki",
+  "branch": "main",
+  "parentPageId": "41553208-df7f-81a3-9a09-feac0e2fee7f",
+  "pages": {
+    "README.md": "41553208-df7f-8177-afbd-fdbfebc75e95",
+    "docs/nishiki.md": "41553208-df7f-8119-a80a-d00af75094d4",
+    "docs/仕様書.md": "41553208-df7f-8151-9a23-ea8a21f1f672",
+    "docs/錦鯉の光沢の仕組み.md": "41553208-df7f-81c5-b865-cbfebbed0556",
+    "docs/錦鯉シェーダーの作り方_URP_HLSL.md": "41553208-df7f-81d8-92d2-e519aa36d7ff",
+    "docs/錦鯉の質感再現に関する文献リスト.md": "41553208-df7f-8160-872c-dd9356504fe9"
+  }
+}
